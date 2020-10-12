@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Task Manager</string>
+    <string name="forgot_password_text">Forgot Password ?</string>
+    <string name="login_text">Login</string>
+    <string name="sign_up_text">Create new account</string>
+    <string name="enter_email_hint">Enter Email</string>
+    <string name="enter_password_hint">Enter Password</string>
 </resources>

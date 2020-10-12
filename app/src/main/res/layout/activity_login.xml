@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginActivity"
+    android:background="@color/colorPrimary">
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/login_app_icon_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textColor="@color/icons"
+        android:textSize="35sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/login_email_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:imeOptions="actionNext"
+        android:hint="@string/enter_email_hint"
+        android:background="@drawable/white_rectangle_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_app_icon_tv"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/login_password_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:imeOptions="actionGo"
+        android:hint="@string/enter_password_hint"
+        android:background="@drawable/white_rectangle_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_email_et"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/login_forgot_password_btn"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="@string/forgot_password_text"
+        android:textColor="@color/icons"
+        app:layout_constraintStart_toStartOf="@+id/login_password_et"
+        app:layout_constraintTop_toBottomOf="@+id/login_password_et" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/login_btn"
+        style="@style/AppTheme.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:layout_marginTop="15dp"
+        android:text="@string/login_text"
+        app:layout_constraintEnd_toEndOf="@+id/login_password_et"
+        app:layout_constraintTop_toBottomOf="@+id/login_password_et" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/login_sign_up_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_up_text"
+        android:textColor="@color/icons"
+        android:layout_marginTop="25dp"
+        android:textAllCaps="false"
+        style="@style/BorderLessButton"
+        app:layout_constraintTop_toBottomOf="@+id/login_forgot_password_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

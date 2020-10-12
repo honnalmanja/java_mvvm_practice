@@ -7,4 +7,15 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="BorderLessButton" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:textSize">@dimen/login_border_less_button_text_size</item>
+        <!-- other items here -->
+    </style>
+
+    <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/colorAccent</item>
+        <item name="android:textColor">@color/icons</item>
+        <item name="android:textSize">@dimen/login_border_less_button_text_size</item>
+    </style>
+
 </resources>
