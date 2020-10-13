@@ -13,13 +13,13 @@ import retrofit2.http.POST;
 
 public interface TaskManagerService {
 
-    @GET("/tasks")
+    @GET("tasks")
     Flowable<TasksResponse> getAllTasks();
 
-    @POST("/users/add")
+    @POST("users/add")
     Single<UserResponse> createUser(@Body CreateUserRequest createUserRequest);
 
-    @POST("/users/login")
+    @POST("users/login")
     Single<UserResponse> loginUser(@Body LoginUserRequest loginUserRequest);
 
 }

@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">Task Manager</string>
+
+    <!-- preference key -->
+    <string name="preference_file_key">AppPreference</string>
+    <string name="key_user_id">key_user_id</string>
+
     <string name="forgot_password_text">Forgot Password ?</string>
     <string name="login_text">Login</string>
     <string name="sign_up_text">Create new account</string>
