@@ -1,4 +1,4 @@
-package com.honnalmanja.javamvvmpractice.adapter;
+package com.honnalmanja.javamvvmpractice.view.task.adapter;
 
 import android.view.ViewGroup;
 

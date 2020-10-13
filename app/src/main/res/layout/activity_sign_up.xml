@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorPrimary"
+    tools:context=".view.user.SignUpActivity">
+
+    <include layout="@layout/tool_bar" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorPrimaryDark"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/profile_email_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:inputType="textEmailAddress"
+            android:imeOptions="actionNext"
+            android:hint="@string/enter_email_hint"
+            android:background="@drawable/white_rectangle_background"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/profile_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:inputType="textPersonName"
+            android:imeOptions="actionNext"
+            android:hint="@string/enter_your_name_hint"
+            android:background="@drawable/white_rectangle_background"
+            app:layout_constraintTop_toBottomOf="@+id/profile_email_et"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/profile_age_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:inputType="number"
+            android:imeOptions="actionNext"
+            android:hint="@string/enter_age_hint"
+            android:background="@drawable/white_rectangle_background"
+            app:layout_constraintTop_toBottomOf="@+id/profile_name_et"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/profile_password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:inputType="textPassword"
+            android:imeOptions="actionNext"
+            android:hint="@string/enter_password_hint"
+            android:background="@drawable/white_rectangle_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_age_et"/>
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/profile_confirm_password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:inputType="textPassword"
+            android:imeOptions="actionGo"
+            android:hint="@string/confirm_password_hint"
+            android:background="@drawable/white_rectangle_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_password_et"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.appcompat.widget.LinearLayoutCompat>
