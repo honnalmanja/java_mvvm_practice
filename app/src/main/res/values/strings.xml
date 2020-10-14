@@ -4,13 +4,22 @@
     <!-- preference key -->
     <string name="preference_file_key">AppPreference</string>
     <string name="key_user_id">key_user_id</string>
+    <!-- preference key -->
 
+    <!-- Login -->
     <string name="forgot_password_text">Forgot Password ?</string>
     <string name="login_text">Login</string>
     <string name="sign_up_text">Create new account</string>
     <string name="enter_email_hint">Enter Email</string>
     <string name="enter_password_hint">Enter Password</string>
+    <string name="enter_email_error">Enter email address</string>
+    <string name="enter_password_error">Enter Password</string>
+    <string name="enter_valid_email_error">Enter valid Email</string>
+    <!-- Login -->
+
+    <!-- Sign up -->
     <string name="confirm_password_hint">Confirm Password</string>
     <string name="enter_age_hint">Enter Age</string>
     <string name="enter_your_name_hint">Enter your name</string>
+    <!-- Sign up -->
 </resources>

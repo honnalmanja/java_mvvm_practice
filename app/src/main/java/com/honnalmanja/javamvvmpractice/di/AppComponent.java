@@ -1,9 +1,7 @@
 package com.honnalmanja.javamvvmpractice.di;
 
-import com.honnalmanja.javamvvmpractice.model.repository.AppRepository;
-import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
-import com.honnalmanja.javamvvmpractice.view.task.TaskActivity;
-import com.honnalmanja.javamvvmpractice.view.user.SignUpActivity;
+import com.honnalmanja.javamvvmpractice.model.repository.TaskRepository;
+import com.honnalmanja.javamvvmpractice.model.repository.UserRepository;
 
 import javax.inject.Singleton;
 
@@ -13,6 +11,8 @@ import dagger.Component;
 @Component(modules = {ApplicationModule.class, RoomModule.class, RetrofitModule.class, PreferenceModule.class})
 public interface AppComponent {
 
-    void inject(AppRepository appRepository);
+    void inject(TaskRepository taskRepository);
+
+    void inject(UserRepository userRepository);
 
 }

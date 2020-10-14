@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/profile_email_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:singleLine="true"
-            android:ellipsize="marquee"
+            android:lines="1"
             android:inputType="textEmailAddress"
             android:imeOptions="actionNext"
             android:hint="@string/enter_email_hint"
@@ -37,7 +37,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/profile_name_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:singleLine="true"
-            android:ellipsize="marquee"
+            android:lines="1"
             android:inputType="textPersonName"
             android:imeOptions="actionNext"
             android:hint="@string/enter_your_name_hint"
@@ -55,7 +55,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/profile_age_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:singleLine="true"
-            android:ellipsize="marquee"
+            android:lines="1"
             android:inputType="number"
             android:imeOptions="actionNext"
             android:hint="@string/enter_age_hint"
@@ -73,7 +73,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/profile_password_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:singleLine="true"
-            android:ellipsize="marquee"
+            android:lines="1"
             android:inputType="textPassword"
             android:imeOptions="actionNext"
             android:hint="@string/enter_password_hint"
@@ -91,7 +91,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_age_et"/>
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/profile_confirm_password_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -99,8 +99,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
-            android:singleLine="true"
-            android:ellipsize="marquee"
+            android:lines="1"
             android:inputType="textPassword"
             android:imeOptions="actionGo"
             android:hint="@string/confirm_password_hint"
