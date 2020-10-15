@@ -1,11 +1,22 @@
-package com.honnalmanja.javamvvmpractice.model.app;
+package com.honnalmanja.javamvvmpractice.model.remote.users;
+
+import com.google.gson.annotations.SerializedName;
 
 public class User {
 
+    @SerializedName("_id")
     private String userID;
+
+    @SerializedName("name")
     private String userName;
+
+    @SerializedName("email")
     private String userEmail;
+
+    @SerializedName("age")
     private int userAge;
+
+    @SerializedName("avatar")
     private String avatarURL;
 
     public User(String userID, String userName, String userEmail, int userAge, String avatarURL) {

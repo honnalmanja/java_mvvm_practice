@@ -3,7 +3,8 @@
 
     <!-- preference key -->
     <string name="preference_file_key">AppPreference</string>
-    <string name="key_user_id">key_user_id</string>
+    <string name="key_user_token">key_user_token</string>
+    <string name="key_logged_in_user">key_logged_in_user</string>
     <!-- preference key -->
 
     <!-- Login -->

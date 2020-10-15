@@ -43,18 +43,6 @@ public class TaskActivity extends AppCompatActivity {
 
         bindView();
 
-        viewModel.askUserID();
-        viewModel.watchUserID().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String userID) {
-                if(userID != null && userID.isEmpty()){
-                    startActivity(new Intent(activity, LoginActivity.class));
-                } else {
-                    viewModel.setUserID(userID);
-                }
-            }
-        });
-
         compositeDisposable.add(
                 RxView.clicks(addTaskFab).throttleFirst(2, TimeUnit.SECONDS)
                         .subscribe(new Consumer<Unit>() {
@@ -63,7 +51,7 @@ public class TaskActivity extends AppCompatActivity {
                                 FragmentManager fragmentManager
                                         = getSupportFragmentManager();
                                 AddTaskDialogFragment addTaskDialogFragment
-                                        = AddTaskDialogFragment.newInstance(viewModel.getUserID());
+                                        = AddTaskDialogFragment.newInstance(viewModel.getUserToken());
                                 addTaskDialogFragment.show(fragmentManager, TAG);
                             }
                         }, new Consumer<Throwable>() {
@@ -74,6 +62,23 @@ public class TaskActivity extends AppCompatActivity {
                         })
         );
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        viewModel.askUserToken();
+        viewModel.watchUserID().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String userToken) {
+                if(userToken != null && userToken.isEmpty()){
+                    startActivity(new Intent(activity, LoginActivity.class));
+                } else {
+                    viewModel.setUserToken(userToken);
+                }
+            }
+        });
     }
 
     public void bindView(){

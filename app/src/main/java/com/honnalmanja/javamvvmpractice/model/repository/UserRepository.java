@@ -1,15 +1,15 @@
 package com.honnalmanja.javamvvmpractice.model.repository;
 
-import android.util.Log;
-
 import com.honnalmanja.javamvvmpractice.TaskManager;
 import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
+import com.honnalmanja.javamvvmpractice.model.remote.users.User;
 import com.honnalmanja.javamvvmpractice.model.local.db.AppDatabase;
 import com.honnalmanja.javamvvmpractice.model.local.prefs.AppPreference;
 import com.honnalmanja.javamvvmpractice.model.remote.TaskManagerService;
 import com.honnalmanja.javamvvmpractice.model.remote.users.CreateUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.LoginUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse;
+import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 
 import javax.inject.Inject;
 
@@ -17,7 +17,9 @@ import androidx.lifecycle.MutableLiveData;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleSource;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import retrofit2.Response;
@@ -56,9 +58,9 @@ public class UserRepository {
         return signUpSuccessLiveData;
     }
 
-    public void askUserID(){
+    public void askUserToken(){
         compositeDisposable.add(
-                Single.just(appPreference.gerUserID())
+                Single.just(appPreference.gerUserToken())
                         .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(new DisposableSingleObserver<String>() {
                             @Override
@@ -82,13 +84,14 @@ public class UserRepository {
                 .subscribeWith(new DisposableSingleObserver<Response<UserResponse>>() {
                     @Override
                     public void onSuccess(Response<UserResponse> response) {
-                        Log.d(TAG,"UserResponse: " + response);
+                        LogUtil.d(TAG,"UserResponse: " + response);
                         ServerResponse loginResponse;
                         if(response.code() == 202){
                             loginResponse = new ServerResponse(true, response.message());
                             UserResponse userResponse = response.body();
                             if(userResponse != null){
-                                appPreference.saveUserID(userResponse.getUserID());
+                                appPreference.saveUserToken(userResponse.getToken());
+                                appPreference.saveUserDetails(userResponse.getUser());
                             }
                         } else if(response.code() == 404) {
                             loginResponse = new ServerResponse(false, response.message());
@@ -100,8 +103,8 @@ public class UserRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.e(TAG,"UserResponse: " + e);
-                        Log.e(TAG,"UserResponse: " + e.getMessage());
+                        LogUtil.e(TAG,"UserResponse: " + e);
+                        LogUtil.e(TAG,"UserResponse: " + e.getMessage());
                         loginSuccessLiveData.postValue(new ServerResponse(false, e.getMessage()));
                     }
                 })
@@ -122,7 +125,8 @@ public class UserRepository {
                             signUpResponse = new ServerResponse(true, response.message());
                             UserResponse userResponse = response.body();
                             if(userResponse != null){
-                                appPreference.saveUserID(userResponse.getUserID());
+                                appPreference.saveUserToken(userResponse.getToken());
+                                appPreference.saveUserDetails(userResponse.getUser());
                             }
                         } else if(response.code() == 404) {
                             signUpResponse = new ServerResponse(false, response.message());
@@ -134,8 +138,8 @@ public class UserRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.e(TAG,"ServerResponse: " + e);
-                        Log.e(TAG,"ServerResponse: " + e.getMessage());
+                        LogUtil.e(TAG,"ServerResponse: " + e);
+                        LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
                         loginSuccessLiveData.postValue(new ServerResponse(false, e.getMessage()));
                     }
                 })

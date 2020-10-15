@@ -8,25 +8,25 @@ import androidx.lifecycle.ViewModel;
 public class TaskViewModel extends ViewModel {
 
     private UserRepository userRepository;
-    private String userID;
+    private String userToken;
 
     public TaskViewModel() {
         userRepository = new UserRepository();
     }
 
-    public void askUserID(){
-        userRepository.askUserID();
+    public void askUserToken(){
+        userRepository.askUserToken();
     }
 
     public MutableLiveData<String> watchUserID() {
         return userRepository.getUserIDLiveData();
     }
 
-    public String getUserID() {
-        return userID;
+    public String getUserToken() {
+        return userToken;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public void setUserToken(String userToken) {
+        this.userToken = userToken;
     }
 }

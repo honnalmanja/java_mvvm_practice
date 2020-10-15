@@ -4,57 +4,30 @@ import com.google.gson.annotations.SerializedName;
 
 public class UserResponse {
 
-    @SerializedName("_id")
-    private String userID;
+    @SerializedName("token")
+    private String token;
 
-    @SerializedName("email")
-    private String email;
+    @SerializedName("user")
+    private User user;
 
-    @SerializedName("password")
-    private String password;
-
-    @SerializedName("name")
-    private String name;
-
-    @SerializedName("age")
-    private int age;
-
-    public UserResponse(String userID, String email, String password, String name, int age) {
-        this.userID = userID;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.age = age;
+    public UserResponse(String token, User user) {
+        this.token = token;
+        this.user = user;
     }
 
-    public String getUserID() {
-        return userID;
+    public String getToken() {
+        return token;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getAge() {
-        return age;
+    public User getUser() {
+        return user;
     }
 
     @Override
     public String toString() {
         return "UserResponse{" +
-                "userID='" + userID + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", name='" + name + '\'' +
-                ", age=" + age +
+                "token='" + token + '\'' +
+                ", user=" + user +
                 '}';
     }
 }
