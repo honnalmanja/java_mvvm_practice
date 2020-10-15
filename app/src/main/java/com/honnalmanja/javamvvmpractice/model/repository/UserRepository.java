@@ -7,6 +7,7 @@ import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
 import com.honnalmanja.javamvvmpractice.model.local.db.AppDatabase;
 import com.honnalmanja.javamvvmpractice.model.local.prefs.AppPreference;
 import com.honnalmanja.javamvvmpractice.model.remote.TaskManagerService;
+import com.honnalmanja.javamvvmpractice.model.remote.users.CreateUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.LoginUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse;
 
@@ -36,10 +37,23 @@ public class UserRepository {
 
     MutableLiveData<String> userIDLiveData = new MutableLiveData<>();
     MutableLiveData<ServerResponse> loginSuccessLiveData = new MutableLiveData<>();
+    MutableLiveData<ServerResponse> signUpSuccessLiveData = new MutableLiveData<>();
     CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public UserRepository() {
         TaskManager.getApp().getAppComponent().inject(this);
+    }
+
+    public MutableLiveData<String> getUserIDLiveData() {
+        return userIDLiveData;
+    }
+
+    public MutableLiveData<ServerResponse> getLoginSuccessLiveData() {
+        return loginSuccessLiveData;
+    }
+
+    public MutableLiveData<ServerResponse> getSignUpSuccessLiveData() {
+        return signUpSuccessLiveData;
     }
 
     public void askUserID(){
@@ -59,14 +73,6 @@ public class UserRepository {
                         })
         );
 
-    }
-
-    public MutableLiveData<String> getUserIDLiveData() {
-        return userIDLiveData;
-    }
-
-    public MutableLiveData<ServerResponse> getLoginSuccessLiveData() {
-        return loginSuccessLiveData;
     }
 
     public void postLoginRequest(LoginUserRequest loginUserRequest){
@@ -101,6 +107,41 @@ public class UserRepository {
                     }
                 })
         );
+    }
+
+    public void postSignUpRequest(CreateUserRequest createUserRequest){
+
+        compositeDisposable.add(
+            taskManagerService.createUser(createUserRequest)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Response<UserResponse>>() {
+                    @Override
+                    public void onSuccess(@NonNull Response<UserResponse> response) {
+                        ServerResponse signUpResponse;
+                        if(response.code() == 200){
+                            signUpResponse = new ServerResponse(true, response.message());
+                            UserResponse userResponse = response.body();
+                            if(userResponse != null){
+                                appPreference.saveUserID(userResponse.getUserID());
+                            }
+                        } else if(response.code() == 404) {
+                            signUpResponse = new ServerResponse(false, response.message());
+                        } else {
+                            signUpResponse = new ServerResponse(false, response.message());
+                        }
+                        signUpSuccessLiveData.postValue(signUpResponse);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        Log.e(TAG,"ServerResponse: " + e);
+                        Log.e(TAG,"ServerResponse: " + e.getMessage());
+                        loginSuccessLiveData.postValue(new ServerResponse(false, e.getMessage()));
+                    }
+                })
+        );
+
     }
 
     public void clear(){

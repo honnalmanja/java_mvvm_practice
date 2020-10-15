@@ -18,7 +18,7 @@ public interface TaskManagerService {
     Flowable<TasksResponse> getAllTasks();
 
     @POST("users/add")
-    Single<UserResponse> createUser(@Body CreateUserRequest createUserRequest);
+    Single<Response<UserResponse>> createUser(@Body CreateUserRequest createUserRequest);
 
     @POST("users/login")
     Single<Response<UserResponse>> loginUser(@Body LoginUserRequest loginUserRequest);

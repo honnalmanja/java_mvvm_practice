@@ -1,5 +1,7 @@
 package com.honnalmanja.javamvvmpractice.model.app;
 
+import java.util.Objects;
+
 public class ServerResponse {
 
     private boolean isSuccess;
@@ -17,6 +19,8 @@ public class ServerResponse {
     public String getMessage() {
         return message;
     }
+
+
 
     @Override
     public String toString() {

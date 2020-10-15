@@ -125,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void openSignUp(View view){
         startActivity(new Intent(activity, SignUpActivity.class));
+        finish();
     }
 
     @Override
