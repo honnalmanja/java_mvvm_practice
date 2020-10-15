@@ -2,24 +2,43 @@ package com.honnalmanja.javamvvmpractice.view.task;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import kotlin.Unit;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.honnalmanja.javamvvmpractice.R;
+import com.honnalmanja.javamvvmpractice.viewmodel.AddTaskViewModel;
+import com.jakewharton.rxbinding4.view.RxView;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * A simple {@link Fragment} subclass.
+ * A simple {@link DialogFragment} subclass.
  * Use the {@link AddTaskDialogFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddTaskDialogFragment extends Fragment {
+public class AddTaskDialogFragment extends DialogFragment {
 
     private static final String USER_ID = "user_id";
 
-    private String userID;
+    private AppCompatImageButton ibCancel, ibAccept;
+    private AppCompatEditText etAddTask;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    private AddTaskViewModel viewModel;
 
     public AddTaskDialogFragment() {
         // Required empty public constructor
@@ -44,22 +63,79 @@ public class AddTaskDialogFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
         if (getArguments() != null) {
-            userID = getArguments().getString(USER_ID);
+            viewModel.setUserID(getArguments().getString(USER_ID));
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_add_task_dialog, container, false);
+        return inflater.inflate(R.layout.fragment_add_task_dialog, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         bindViews(view);
 
-        return view;
+        compositeDisposable.add(
+                RxView.clicks(ibAccept).throttleFirst(2, TimeUnit.SECONDS)
+                        .subscribe(new Consumer<Unit>() {
+                            @Override
+                            public void accept(Unit unit) throws Throwable {
+                                posTask();
+                            }
+                        }, new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Throwable {
+
+                            }
+                        })
+        );
+
+    }
+
+    public void posTask(){
+
+        String taskDescription = etAddTask.getText().toString();
+
+        if(taskDescription.trim().isEmpty()){
+            etAddTask.setError("Task description cannot be null");
+            return;
+        }
+
+        viewModel.postTaskDescription(taskDescription);
+
     }
 
     private void bindViews(View view) {
 
+        ibCancel = view.findViewById(R.id.tool_bar_back_btn);
+        ibCancel.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                R.drawable.ic_baseline_close_24, null)
+        );
+        ibCancel.setVisibility(View.VISIBLE);
+
+        ibAccept = view.findViewById(R.id.tool_bar_more_options_btn);
+        ibAccept.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                R.drawable.ic_baseline_check_24, null)
+        );
+        ibAccept.setVisibility(View.VISIBLE);
+
+        AppCompatTextView tvTitle = view.findViewById(R.id.tool_bar_title_tv);
+        tvTitle.setText(getResources().getString(R.string.add_task_title));
+
+        etAddTask = view.findViewById(R.id.add_task_et);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        viewModel.clear();
+        compositeDisposable.clear();
     }
 }

@@ -63,7 +63,7 @@ public class UserRepository {
                         .subscribeWith(new DisposableSingleObserver<String>() {
                             @Override
                             public void onSuccess(@NonNull String s) {
-                                userIDLiveData.postValue(s);
+                               userIDLiveData.postValue(s);
                             }
 
                             @Override
@@ -72,7 +72,6 @@ public class UserRepository {
                             }
                         })
         );
-
     }
 
     public void postLoginRequest(LoginUserRequest loginUserRequest){
@@ -85,7 +84,7 @@ public class UserRepository {
                     public void onSuccess(Response<UserResponse> response) {
                         Log.d(TAG,"UserResponse: " + response);
                         ServerResponse loginResponse;
-                        if(response.code() == 200){
+                        if(response.code() == 202){
                             loginResponse = new ServerResponse(true, response.message());
                             UserResponse userResponse = response.body();
                             if(userResponse != null){

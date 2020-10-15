@@ -21,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @Module
 public class RetrofitModule {
 
-    private static String BASE_URL = "http://locahost:3000/api/";
+    private static String BASE_URL = "http://192.168.0.105:3000/";
 
     @Provides
     @Singleton
@@ -49,7 +49,6 @@ public class RetrofitModule {
                     public Response intercept(Chain chain) throws IOException {
                         Request request = chain.request().newBuilder()
                                 .addHeader("Content-Type", "application/json")
-                                .addHeader("Accept", "application/json")
                                 .addHeader("Authorization", "Bearer")
                                 .build();
                         return chain.proceed(request);

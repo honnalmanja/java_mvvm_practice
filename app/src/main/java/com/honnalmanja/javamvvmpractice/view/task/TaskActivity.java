@@ -1,23 +1,37 @@
 package com.honnalmanja.javamvvmpractice.view.task;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import kotlin.Unit;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.honnalmanja.javamvvmpractice.R;
+import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
+import com.jakewharton.rxbinding4.view.RxView;
+
+import java.util.concurrent.TimeUnit;
 
 public class TaskActivity extends AppCompatActivity {
 
+    private static final String TAG = TaskActivity.class.getSimpleName();
+
     private TaskViewModel viewModel;
     private TaskActivity activity;
+    private FloatingActionButton addTaskFab;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,17 +41,44 @@ public class TaskActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
+        bindView();
+
         viewModel.askUserID();
-        viewModel.getUserID().observe(this, new Observer<String>() {
+        viewModel.watchUserID().observe(this, new Observer<String>() {
             @Override
             public void onChanged(String userID) {
                 if(userID != null && userID.isEmpty()){
                     startActivity(new Intent(activity, LoginActivity.class));
                 } else {
-                    Toast.makeText(activity, userID, Toast.LENGTH_LONG).show();
+                    viewModel.setUserID(userID);
                 }
             }
         });
+
+        compositeDisposable.add(
+                RxView.clicks(addTaskFab).throttleFirst(2, TimeUnit.SECONDS)
+                        .subscribe(new Consumer<Unit>() {
+                            @Override
+                            public void accept(Unit unit) throws Throwable {
+                                FragmentManager fragmentManager
+                                        = getSupportFragmentManager();
+                                AddTaskDialogFragment addTaskDialogFragment
+                                        = AddTaskDialogFragment.newInstance(viewModel.getUserID());
+                                addTaskDialogFragment.show(fragmentManager, TAG);
+                            }
+                        }, new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Throwable {
+                                LogUtil.e(TAG, "throwable: " + throwable);
+                            }
+                        })
+        );
+
+    }
+
+    public void bindView(){
+
+        addTaskFab = findViewById(R.id.add_task_fab);
 
     }
 }

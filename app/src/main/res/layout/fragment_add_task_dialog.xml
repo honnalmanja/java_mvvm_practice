@@ -25,15 +25,16 @@
             android:layout_height="wrap_content"
             android:text="@string/create_new_task_text"
             android:textColor="@color/icons"
-            android:textSize="16sp"
             android:layout_marginStart="10dp"
             android:layout_marginBottom="5dp"/>
+
         <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/add_task_id"
+            android:id="@+id/add_task_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp"
             android:lines="5"
+            android:inputType="textMultiLine"
             android:imeOptions="actionDone"
             android:background="@drawable/white_rectangle_background"/>
 
