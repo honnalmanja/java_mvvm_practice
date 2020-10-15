@@ -1,13 +1,12 @@
 package com.honnalmanja.javamvvmpractice.view.task;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 
 import android.content.Intent;
@@ -15,7 +14,10 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
+import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
@@ -30,6 +32,7 @@ public class TaskActivity extends AppCompatActivity {
     private TaskViewModel viewModel;
     private TaskActivity activity;
     private FloatingActionButton addTaskFab;
+    private ConstraintLayout constraintLayout;
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -51,7 +54,7 @@ public class TaskActivity extends AppCompatActivity {
                                 FragmentManager fragmentManager
                                         = getSupportFragmentManager();
                                 AddTaskDialogFragment addTaskDialogFragment
-                                        = AddTaskDialogFragment.newInstance(viewModel.getUserToken());
+                                        = AddTaskDialogFragment.newInstance();
                                 addTaskDialogFragment.show(fragmentManager, TAG);
                             }
                         }, new Consumer<Throwable>() {
@@ -68,21 +71,33 @@ public class TaskActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        viewModel.askUserToken();
-        viewModel.watchUserID().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String userToken) {
-                if(userToken != null && userToken.isEmpty()){
-                    startActivity(new Intent(activity, LoginActivity.class));
-                } else {
-                    viewModel.setUserToken(userToken);
-                }
-            }
-        });
+        viewModel.askForAllTask();
+        viewModel.getAllTaskLiveData()
+                .observe(this, new Observer<TasksResponse>() {
+                    @Override
+                    public void onChanged(TasksResponse response) {
+                        LogUtil.d(TAG, "TasksResponse: "+response);
+                        if(response.getStatusCode() == 200){
+                            if(response.getTaskList() == null || response.getTaskList().size() == 0){
+                                Snackbar.make(constraintLayout, "No Task Found", BaseTransientBottomBar.LENGTH_LONG).show();
+                            } else {
+
+                            }
+                        } else if(response.getStatusCode() == 401) {
+                            startActivity(new Intent(activity, LoginActivity.class));
+                            Toast.makeText(activity, response.getMessage(), Toast.LENGTH_LONG).show();
+                        }else if(response.getStatusCode() == 404) {
+                            Snackbar.make(constraintLayout, response.getMessage(), BaseTransientBottomBar.LENGTH_LONG).show();
+                        } else {
+                            Snackbar.make(constraintLayout, response.getMessage(), BaseTransientBottomBar.LENGTH_LONG).show();
+                        }
+                    }
+                });
     }
 
     public void bindView(){
 
+        constraintLayout = findViewById(R.id.task_list_llc);
         addTaskFab = findViewById(R.id.add_task_fab);
 
     }

@@ -1,6 +1,6 @@
 package com.honnalmanja.javamvvmpractice.viewmodel;
 
-import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
+import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.users.CreateUserRequest;
 import com.honnalmanja.javamvvmpractice.model.repository.UserRepository;
 
@@ -10,13 +10,13 @@ import androidx.lifecycle.ViewModel;
 public class SignUpViewModel extends ViewModel {
 
     UserRepository repository;
-    MutableLiveData<ServerResponse> signUpSuccessLiveData = new MutableLiveData<>();
+    MutableLiveData<UserLiveData> signUpSuccessLiveData = new MutableLiveData<>();
 
     public SignUpViewModel() {
         this.repository = new UserRepository();
     }
 
-    public MutableLiveData<ServerResponse> getSignUpSuccessLiveData() {
+    public MutableLiveData<UserLiveData> getSignUpSuccessLiveData() {
         return repository.getSignUpSuccessLiveData();
     }
 

@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class AddTaskDialogFragment extends DialogFragment {
 
-    private static final String USER_TOKEN = "user_token";
-
     private AppCompatImageButton ibCancel, ibAccept;
     private AppCompatEditText etAddTask;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -48,14 +46,12 @@ public class AddTaskDialogFragment extends DialogFragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param userToken String userToken to create task with user loggedIN.
      * @return A new instance of fragment AddTaskDialogFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AddTaskDialogFragment newInstance(String userToken) {
+    public static AddTaskDialogFragment newInstance() {
         AddTaskDialogFragment fragment = new AddTaskDialogFragment();
         Bundle args = new Bundle();
-        args.putString(USER_TOKEN, userToken);
         fragment.setArguments(args);
         return fragment;
     }
@@ -64,9 +60,7 @@ public class AddTaskDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
-        if (getArguments() != null) {
-            viewModel.setUserID(getArguments().getString(USER_TOKEN));
-        }
+
     }
 
     @Override

@@ -1,8 +1,7 @@
 package com.honnalmanja.javamvvmpractice.model.repository;
 
 import com.honnalmanja.javamvvmpractice.TaskManager;
-import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
-import com.honnalmanja.javamvvmpractice.model.remote.users.User;
+import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.local.db.AppDatabase;
 import com.honnalmanja.javamvvmpractice.model.local.prefs.AppPreference;
 import com.honnalmanja.javamvvmpractice.model.remote.TaskManagerService;
@@ -16,10 +15,7 @@ import javax.inject.Inject;
 import androidx.lifecycle.MutableLiveData;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleSource;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import retrofit2.Response;
@@ -37,43 +33,21 @@ public class UserRepository {
     @Inject
     AppPreference appPreference;
 
-    MutableLiveData<String> userIDLiveData = new MutableLiveData<>();
-    MutableLiveData<ServerResponse> loginSuccessLiveData = new MutableLiveData<>();
-    MutableLiveData<ServerResponse> signUpSuccessLiveData = new MutableLiveData<>();
+
+    MutableLiveData<UserLiveData> loginSuccessLiveData = new MutableLiveData<>();
+    MutableLiveData<UserLiveData> signUpSuccessLiveData = new MutableLiveData<>();
     CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public UserRepository() {
         TaskManager.getApp().getAppComponent().inject(this);
     }
 
-    public MutableLiveData<String> getUserIDLiveData() {
-        return userIDLiveData;
-    }
-
-    public MutableLiveData<ServerResponse> getLoginSuccessLiveData() {
+    public MutableLiveData<UserLiveData> getLoginSuccessLiveData() {
         return loginSuccessLiveData;
     }
 
-    public MutableLiveData<ServerResponse> getSignUpSuccessLiveData() {
+    public MutableLiveData<UserLiveData> getSignUpSuccessLiveData() {
         return signUpSuccessLiveData;
-    }
-
-    public void askUserToken(){
-        compositeDisposable.add(
-                Single.just(appPreference.gerUserToken())
-                        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<String>() {
-                            @Override
-                            public void onSuccess(@NonNull String s) {
-                               userIDLiveData.postValue(s);
-                            }
-
-                            @Override
-                            public void onError(@NonNull Throwable e) {
-                                userIDLiveData.postValue("");
-                            }
-                        })
-        );
     }
 
     public void postLoginRequest(LoginUserRequest loginUserRequest){
@@ -81,31 +55,52 @@ public class UserRepository {
                 taskManagerService.loginUser(loginUserRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableSingleObserver<Response<UserResponse>>() {
+                .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
                     @Override
-                    public void onSuccess(Response<UserResponse> response) {
-                        LogUtil.d(TAG,"UserResponse: " + response);
-                        ServerResponse loginResponse;
+                    public void onSuccess(Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
+                        LogUtil.d(TAG,"ServerResponse: " + response);
+                        UserLiveData userLiveData;
                         if(response.code() == 202){
-                            loginResponse = new ServerResponse(true, response.message());
                             UserResponse userResponse = response.body();
                             if(userResponse != null){
+                                userLiveData = new UserLiveData(
+                                        response.code(),
+                                        response.message(),
+                                        userResponse.getUser(),
+                                        null
+                                );
                                 appPreference.saveUserToken(userResponse.getToken());
                                 appPreference.saveUserDetails(userResponse.getUser());
+                            } else {
+                                userLiveData = new UserLiveData(
+                                        response.code(),
+                                        response.message(),
+                                        null,
+                                        null
+                                );
                             }
-                        } else if(response.code() == 404) {
-                            loginResponse = new ServerResponse(false, response.message());
+                            loginSuccessLiveData.postValue(userLiveData);
                         } else {
-                            loginResponse = new ServerResponse(false, response.message());
+                            userLiveData = new UserLiveData(
+                                    response.code(),
+                                    response.message(),
+                                    null,
+                                    null
+                            );
                         }
-                        loginSuccessLiveData.postValue(loginResponse);
+                        loginSuccessLiveData.postValue(userLiveData);
                     }
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        LogUtil.e(TAG,"UserResponse: " + e);
-                        LogUtil.e(TAG,"UserResponse: " + e.getMessage());
-                        loginSuccessLiveData.postValue(new ServerResponse(false, e.getMessage()));
+                        LogUtil.e(TAG,"ServerResponse: " + e);
+                        LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
+                        loginSuccessLiveData.postValue(new UserLiveData(
+                                500,
+                                e.getMessage(),
+                                null,
+                                null
+                        ));
                     }
                 })
         );
@@ -117,21 +112,37 @@ public class UserRepository {
             taskManagerService.createUser(createUserRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableSingleObserver<Response<UserResponse>>() {
+                .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
                     @Override
-                    public void onSuccess(@NonNull Response<UserResponse> response) {
-                        ServerResponse signUpResponse;
+                    public void onSuccess(@NonNull Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
+                        UserLiveData signUpResponse;
                         if(response.code() == 200){
-                            signUpResponse = new ServerResponse(true, response.message());
-                            UserResponse userResponse = response.body();
+                            com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse userResponse = response.body();
                             if(userResponse != null){
+                                signUpResponse = new UserLiveData(
+                                        response.code(),
+                                        response.message(),
+                                        userResponse.getUser(),
+                                        null
+                                );
                                 appPreference.saveUserToken(userResponse.getToken());
                                 appPreference.saveUserDetails(userResponse.getUser());
+                            } else {
+                                signUpResponse = new UserLiveData(
+                                        response.code(),
+                                        response.message(),
+                                        null,
+                                        null
+                                );
                             }
-                        } else if(response.code() == 404) {
-                            signUpResponse = new ServerResponse(false, response.message());
+                            signUpSuccessLiveData.postValue(signUpResponse);
                         } else {
-                            signUpResponse = new ServerResponse(false, response.message());
+                            signUpResponse = new UserLiveData(
+                                    response.code(),
+                                    response.message(),
+                                    null,
+                                    null
+                            );
                         }
                         signUpSuccessLiveData.postValue(signUpResponse);
                     }
@@ -140,7 +151,12 @@ public class UserRepository {
                     public void onError(@NonNull Throwable e) {
                         LogUtil.e(TAG,"ServerResponse: " + e);
                         LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
-                        loginSuccessLiveData.postValue(new ServerResponse(false, e.getMessage()));
+                        loginSuccessLiveData.postValue(new UserLiveData(
+                                500,
+                                e.getMessage(),
+                                null,
+                                null
+                        ));
                     }
                 })
         );

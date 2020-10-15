@@ -8,10 +8,8 @@ import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 
 import android.content.Intent;
@@ -21,10 +19,8 @@ import android.view.View;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.honnalmanja.javamvvmpractice.R;
-import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
+import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.view.task.TaskActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.SignUpViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
@@ -70,17 +66,17 @@ public class SignUpActivity extends AppCompatActivity {
                     })
         );
 
-        viewModel.getSignUpSuccessLiveData().observe(this, new Observer<ServerResponse>() {
+        viewModel.getSignUpSuccessLiveData().observe(this, new Observer<UserLiveData>() {
             @Override
-            public void onChanged(ServerResponse serverResponse) {
-                if(serverResponse.isSuccess()){
+            public void onChanged(UserLiveData userLiveData) {
+                if(userLiveData.getStatusCode() == 200){
                     Intent intent = new Intent(activity, TaskActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
                     Snackbar.make(
                             llcHolder,
-                            serverResponse.getMessage(),
+                            userLiveData.getMessage(),
                             BaseTransientBottomBar.LENGTH_LONG
                     ).show();
                 }

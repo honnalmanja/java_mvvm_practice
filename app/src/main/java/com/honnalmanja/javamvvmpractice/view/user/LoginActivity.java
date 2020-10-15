@@ -5,13 +5,8 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
-import io.reactivex.rxjava3.functions.Function;
-import io.reactivex.rxjava3.observers.DisposableObserver;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 
 import android.content.Intent;
@@ -19,16 +14,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ScrollView;
-import android.widget.Toast;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
-import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
+import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.utils.CommonUtils;
 import com.honnalmanja.javamvvmpractice.viewmodel.LoginViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
-import com.jakewharton.rxbinding4.widget.RxTextView;
 
 import java.util.concurrent.TimeUnit;
 
@@ -68,15 +61,15 @@ public class LoginActivity extends AppCompatActivity {
                 })
         );
 
-        viewModel.getLoginSuccessLiveData().observe(this, new Observer<ServerResponse>() {
+        viewModel.getLoginSuccessLiveData().observe(this, new Observer<UserLiveData>() {
             @Override
-            public void onChanged(ServerResponse serverResponse) {
-                if(serverResponse.isSuccess()){
+            public void onChanged(UserLiveData userLiveData) {
+                if(userLiveData.getStatusCode() == 202){
                     finish();
                 } else {
                     Snackbar.make(
                         scrollView,
-                        serverResponse.getMessage(),
+                        userLiveData.getMessage(),
                         BaseTransientBottomBar.LENGTH_LONG
                     ).show();
                 }

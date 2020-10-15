@@ -1,32 +1,25 @@
 package com.honnalmanja.javamvvmpractice.viewmodel;
 
-import com.honnalmanja.javamvvmpractice.model.repository.UserRepository;
+import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.model.repository.TaskRepository;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 public class TaskViewModel extends ViewModel {
 
-    private UserRepository userRepository;
-    private String userToken;
+    private TaskRepository taskRepository;
 
     public TaskViewModel() {
-        userRepository = new UserRepository();
+        taskRepository = new TaskRepository();
     }
 
-    public void askUserToken(){
-        userRepository.askUserToken();
+    public void askForAllTask(){
+        taskRepository.askForAllTask();
     }
 
-    public MutableLiveData<String> watchUserID() {
-        return userRepository.getUserIDLiveData();
+    public MutableLiveData<TasksResponse> getAllTaskLiveData() {
+        return taskRepository.getAllTaskLiveData();
     }
 
-    public String getUserToken() {
-        return userToken;
-    }
-
-    public void setUserToken(String userToken) {
-        this.userToken = userToken;
-    }
 }

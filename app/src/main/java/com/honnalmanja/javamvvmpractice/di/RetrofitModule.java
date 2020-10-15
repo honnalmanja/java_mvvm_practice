@@ -44,16 +44,6 @@ public class RetrofitModule {
         interceptor.level(HttpLoggingInterceptor.Level.BODY);
         return new OkHttpClient().newBuilder()
                 .addInterceptor(interceptor)
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request().newBuilder()
-                                .addHeader("Content-Type", "application/json")
-                                .addHeader("Authorization", "Bearer")
-                                .build();
-                        return chain.proceed(request);
-                    }
-                })
                 .connectTimeout(120, TimeUnit.SECONDS)
                 .readTimeout(120, TimeUnit.SECONDS)
                 .writeTimeout(120, TimeUnit.SECONDS)

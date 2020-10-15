@@ -1,6 +1,6 @@
 package com.honnalmanja.javamvvmpractice.viewmodel;
 
-import com.honnalmanja.javamvvmpractice.model.app.ServerResponse;
+import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.users.LoginUserRequest;
 import com.honnalmanja.javamvvmpractice.model.repository.UserRepository;
 
@@ -15,7 +15,7 @@ public class LoginViewModel extends ViewModel {
         userRepository = new UserRepository();
     }
 
-    public MutableLiveData<ServerResponse> getLoginSuccessLiveData() {
+    public MutableLiveData<UserLiveData> getLoginSuccessLiveData() {
         return userRepository.getLoginSuccessLiveData();
     }
 
