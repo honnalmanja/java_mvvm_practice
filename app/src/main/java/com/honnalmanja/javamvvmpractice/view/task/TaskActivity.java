@@ -5,6 +5,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
 import kotlin.Unit;
@@ -18,14 +20,16 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
 import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class TaskActivity extends AppCompatActivity {
+public class TaskActivity extends AppCompatActivity implements TaskClickListener {
 
     private static final String TAG = TaskActivity.class.getSimpleName();
 
@@ -33,6 +37,9 @@ public class TaskActivity extends AppCompatActivity {
     private TaskActivity activity;
     private FloatingActionButton addTaskFab;
     private ConstraintLayout constraintLayout;
+
+    private RecyclerView rvTasks;
+    private TaskListAdapter taskListAdapter;
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -68,8 +75,23 @@ public class TaskActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
+        searchForTasks();
+    }
+
+    public void bindView(){
+
+        constraintLayout = findViewById(R.id.task_list_llc);
+        addTaskFab = findViewById(R.id.add_task_fab);
+        rvTasks = findViewById(R.id.task_list_rv);
+        rvTasks.setLayoutManager(new LinearLayoutManager(activity, RecyclerView.VERTICAL, false));
+        taskListAdapter = new TaskListAdapter(new ArrayList<>(),this);
+        rvTasks.setAdapter(taskListAdapter);
+
+    }
+
+    public void searchForTasks(){
 
         viewModel.askForAllTask();
         viewModel.getAllTaskLiveData()
@@ -81,7 +103,7 @@ public class TaskActivity extends AppCompatActivity {
                             if(response.getTaskList() == null || response.getTaskList().size() == 0){
                                 Snackbar.make(constraintLayout, "No Task Found", BaseTransientBottomBar.LENGTH_LONG).show();
                             } else {
-
+                                taskListAdapter.setTaskList(response.getTaskList());
                             }
                         } else if(response.getStatusCode() == 401) {
                             startActivity(new Intent(activity, LoginActivity.class));
@@ -93,12 +115,11 @@ public class TaskActivity extends AppCompatActivity {
                         }
                     }
                 });
+
     }
 
-    public void bindView(){
-
-        constraintLayout = findViewById(R.id.task_list_llc);
-        addTaskFab = findViewById(R.id.add_task_fab);
+    @Override
+    public void onTaskClicked(Task task, int position) {
 
     }
 }

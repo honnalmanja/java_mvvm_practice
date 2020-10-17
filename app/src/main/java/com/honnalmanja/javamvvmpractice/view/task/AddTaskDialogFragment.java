@@ -1,5 +1,7 @@
 package com.honnalmanja.javamvvmpractice.view.task;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -7,9 +9,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -18,8 +22,14 @@ import kotlin.Unit;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.Toast;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
+import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.AddTaskViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
 
@@ -34,6 +44,8 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     private AppCompatImageButton ibCancel, ibAccept;
     private AppCompatEditText etAddTask;
+    private LinearLayoutCompat llcHolder;
+
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private AddTaskViewModel viewModel;
@@ -60,6 +72,19 @@ public class AddTaskDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if(dialog != null){
+            Window window = getDialog().getWindow();
+            if(window != null){
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            }
+        }
 
     }
 
@@ -106,6 +131,23 @@ public class AddTaskDialogFragment extends DialogFragment {
         );
 
 
+        viewModel.watchAddTaskLiveData().observe(this, new Observer<TasksResponse>() {
+            @Override
+            public void onChanged(TasksResponse response) {
+
+                if(response.getStatusCode() == 201){
+                    Toast.makeText(getActivity(), response.getMessage(), Toast.LENGTH_LONG).show();
+                    dismiss();
+                } else if(response.getStatusCode() == 401) {
+                    dismiss();
+                    Toast.makeText(getActivity(), response.getMessage(), Toast.LENGTH_LONG).show();
+                } else {
+                    Snackbar.make(llcHolder, response.getMessage(), BaseTransientBottomBar.LENGTH_LONG).show();
+                }
+
+            }
+        });
+
     }
 
     public void postTask(){
@@ -122,6 +164,8 @@ public class AddTaskDialogFragment extends DialogFragment {
     }
 
     private void bindViews(View view) {
+
+        llcHolder = view.findViewById(R.id.add_task_holder_llc);
 
         ibCancel = view.findViewById(R.id.tool_bar_back_btn);
         ibCancel.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
