@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.observers.DisposableObserver;
 import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import retrofit2.Response;
@@ -33,21 +34,27 @@ public class UserRepository {
     @Inject
     AppPreference appPreference;
 
+    private UserLiveData loginResponse, signUpResponse;
 
-    MutableLiveData<UserLiveData> loginSuccessLiveData = new MutableLiveData<>();
-    MutableLiveData<UserLiveData> signUpSuccessLiveData = new MutableLiveData<>();
+    private MutableLiveData<UserLiveData> loginResponseLiveData = new MutableLiveData<>();
+    MutableLiveData<UserLiveData> signUpResponseLiveData = new MutableLiveData<>();
+    MutableLiveData<UserLiveData> logoutResponseLiveData = new MutableLiveData<>();
     CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public UserRepository() {
         TaskManager.getApp().getAppComponent().inject(this);
     }
 
-    public MutableLiveData<UserLiveData> getLoginSuccessLiveData() {
-        return loginSuccessLiveData;
+    public MutableLiveData<UserLiveData> getLoginResponseLiveData() {
+        return loginResponseLiveData;
     }
 
-    public MutableLiveData<UserLiveData> getSignUpSuccessLiveData() {
-        return signUpSuccessLiveData;
+    public MutableLiveData<UserLiveData> getSignUpResponseLiveData() {
+        return signUpResponseLiveData;
+    }
+
+    public MutableLiveData<UserLiveData> getLogoutResponseLiveData() {
+        return logoutResponseLiveData;
     }
 
     public void postLoginRequest(LoginUserRequest loginUserRequest){
@@ -55,15 +62,13 @@ public class UserRepository {
                 taskManagerService.loginUser(loginUserRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
+                .subscribeWith(new DisposableObserver<Response<UserResponse>>() {
                     @Override
-                    public void onSuccess(Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
-                        LogUtil.d(TAG,"ServerResponse: " + response);
-                        UserLiveData userLiveData;
+                    public void onNext(@NonNull Response<UserResponse> response) {
                         if(response.code() == 202){
                             UserResponse userResponse = response.body();
                             if(userResponse != null){
-                                userLiveData = new UserLiveData(
+                                loginResponse = new UserLiveData(
                                         response.code(),
                                         response.message(),
                                         userResponse.getUser(),
@@ -72,35 +77,39 @@ public class UserRepository {
                                 appPreference.saveUserToken(userResponse.getToken());
                                 appPreference.saveUserDetails(userResponse.getUser());
                             } else {
-                                userLiveData = new UserLiveData(
+                                loginResponse = new UserLiveData(
                                         response.code(),
                                         response.message(),
                                         null,
                                         null
                                 );
                             }
-                            loginSuccessLiveData.postValue(userLiveData);
                         } else {
-                            userLiveData = new UserLiveData(
+                            loginResponse = new UserLiveData(
                                     response.code(),
                                     response.message(),
                                     null,
                                     null
                             );
                         }
-                        loginSuccessLiveData.postValue(userLiveData);
+
                     }
 
                     @Override
                     public void onError(@NonNull Throwable e) {
                         LogUtil.e(TAG,"ServerResponse: " + e);
                         LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
-                        loginSuccessLiveData.postValue(new UserLiveData(
+                        loginResponseLiveData.postValue(new UserLiveData(
                                 500,
                                 e.getMessage(),
                                 null,
                                 null
                         ));
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        loginResponseLiveData.postValue(loginResponse);
                     }
                 })
         );
@@ -112,10 +121,9 @@ public class UserRepository {
             taskManagerService.createUser(createUserRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
+                .subscribeWith(new DisposableObserver<Response<UserResponse>>() {
                     @Override
-                    public void onSuccess(@NonNull Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
-                        UserLiveData signUpResponse;
+                    public void onNext(@NonNull Response<UserResponse> response) {
                         if(response.code() == 200){
                             com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse userResponse = response.body();
                             if(userResponse != null){
@@ -135,7 +143,6 @@ public class UserRepository {
                                         null
                                 );
                             }
-                            signUpSuccessLiveData.postValue(signUpResponse);
                         } else {
                             signUpResponse = new UserLiveData(
                                     response.code(),
@@ -144,23 +151,82 @@ public class UserRepository {
                                     null
                             );
                         }
-                        signUpSuccessLiveData.postValue(signUpResponse);
                     }
 
                     @Override
                     public void onError(@NonNull Throwable e) {
                         LogUtil.e(TAG,"ServerResponse: " + e);
                         LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
-                        loginSuccessLiveData.postValue(new UserLiveData(
+                        loginResponseLiveData.postValue(new UserLiveData(
                                 500,
                                 e.getMessage(),
                                 null,
                                 null
                         ));
                     }
+
+                    @Override
+                    public void onComplete() {
+                        signUpResponseLiveData.postValue(signUpResponse);
+                    }
                 })
         );
+    }
 
+    public void postLogoutRequest(){
+        compositeDisposable.add(
+                taskManagerService.logoutUser("Bearer " + appPreference.gerUserToken())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
+                            @Override
+                            public void onSuccess(Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
+                                LogUtil.d(TAG,"ServerResponse: " + response);
+                                UserLiveData userLiveData;
+                                if(response.code() == 202){
+                                    UserResponse userResponse = response.body();
+                                    if(userResponse != null){
+                                        userLiveData = new UserLiveData(
+                                                response.code(),
+                                                response.message(),
+                                                null,
+                                                null
+                                        );
+                                        appPreference.saveUserToken("");
+                                        appPreference.saveUserDetails(null);
+                                    } else {
+                                        userLiveData = new UserLiveData(
+                                                response.code(),
+                                                response.message(),
+                                                null,
+                                                null
+                                        );
+                                    }
+                                    logoutResponseLiveData.postValue(userLiveData);
+                                } else {
+                                    userLiveData = new UserLiveData(
+                                            response.code(),
+                                            response.message(),
+                                            null,
+                                            null
+                                    );
+                                }
+                                logoutResponseLiveData.postValue(userLiveData);
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+                                LogUtil.e(TAG,"ServerResponse: " + e);
+                                LogUtil.e(TAG,"ServerResponse: " + e.getMessage());
+                                logoutResponseLiveData.postValue(new UserLiveData(
+                                        500,
+                                        e.getMessage(),
+                                        null,
+                                        null
+                                ));
+                            }
+                        })
+        );
     }
 
     public void clear(){

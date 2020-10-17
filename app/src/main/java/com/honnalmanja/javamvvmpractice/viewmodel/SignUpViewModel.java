@@ -17,7 +17,7 @@ public class SignUpViewModel extends ViewModel {
     }
 
     public MutableLiveData<UserLiveData> getSignUpSuccessLiveData() {
-        return repository.getSignUpSuccessLiveData();
+        return repository.getSignUpResponseLiveData();
     }
 
     public void postSignUpData(String email, String password, String name, int age){

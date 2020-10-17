@@ -16,7 +16,7 @@ public class LoginViewModel extends ViewModel {
     }
 
     public MutableLiveData<UserLiveData> getLoginSuccessLiveData() {
-        return userRepository.getLoginSuccessLiveData();
+        return userRepository.getLoginResponseLiveData();
     }
 
     public void postLoginRequest(String email, String password){

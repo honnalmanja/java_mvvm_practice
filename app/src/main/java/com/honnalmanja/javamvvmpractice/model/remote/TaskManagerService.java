@@ -23,10 +23,16 @@ public interface TaskManagerService {
 
     //-------------------------- User Services ------------------------------//
     @POST("users/add")
-    Single<Response<UserResponse>> createUser(@Body CreateUserRequest createUserRequest);
+    Observable<Response<UserResponse>> createUser(@Body CreateUserRequest createUserRequest);
 
     @POST("users/login")
-    Single<Response<UserResponse>> loginUser(@Body LoginUserRequest loginUserRequest);
+    Observable<Response<UserResponse>> loginUser(@Body LoginUserRequest loginUserRequest);
+
+    @POST("users/logoutAll")
+    Single<Response<UserResponse>> logoutAll(@Header("Authorization") String token);
+
+    @POST("users/logout")
+    Single<Response<UserResponse>> logoutUser(@Header("Authorization") String token);
     //-------------------------- User Services ------------------------------//
 
     //-------------------------- Task Services ------------------------------//

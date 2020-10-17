@@ -3,6 +3,7 @@ package com.honnalmanja.javamvvmpractice.view.user;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -35,8 +36,7 @@ public class SignUpActivity extends AppCompatActivity {
     private SignUpViewModel viewModel;
 
     private AppCompatEditText etEmail, etUserName, etAge, etPassword, etConfirmPassword;
-    private AppCompatImageButton ibCancel, ibAccept;
-    private AppCompatTextView tvTitle;
+    private AppCompatImageView ibCancel, ibAccept;
     private LinearLayoutCompat llcHolder;
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -57,6 +57,20 @@ public class SignUpActivity extends AppCompatActivity {
                         @Override
                         public void accept(Unit unit) throws Throwable {
                             postUserData();
+                        }
+                    }, new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Throwable {
+                            Log.e(TAG,"throwable: " +throwable.getMessage());
+                        }
+                    })
+        );
+        compositeDisposable.add(
+            RxView.clicks(ibCancel).throttleFirst(2, TimeUnit.SECONDS)
+                    .subscribe(new Consumer<Unit>() {
+                        @Override
+                        public void accept(Unit unit) throws Throwable {
+                            finish();
                         }
                     }, new Consumer<Throwable>() {
                         @Override
@@ -103,7 +117,7 @@ public class SignUpActivity extends AppCompatActivity {
         );
         ibAccept.setVisibility(View.VISIBLE);
 
-        tvTitle = findViewById(R.id.tool_bar_title_tv);
+        AppCompatTextView tvTitle = findViewById(R.id.tool_bar_title_tv);
         tvTitle.setText(getResources().getString(R.string.sign_up_title));
 
         etEmail = findViewById(R.id.profile_email_et);

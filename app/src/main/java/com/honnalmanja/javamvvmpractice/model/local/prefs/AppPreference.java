@@ -28,9 +28,9 @@ public class AppPreference {
                 application.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
     }
 
-    public void saveUserToken(String userID){
+    public void saveUserToken(String userToken){
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(application.getString(R.string.key_user_token), userID);
+        editor.putString(application.getString(R.string.key_user_token), userToken);
         editor.apply();
     }
 
@@ -40,11 +40,13 @@ public class AppPreference {
     }
 
     public void saveUserDetails(User user){
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(user);
-        editor.putString(application.getString(R.string.key_logged_in_user), json);
-        editor.apply();
+        if(user != null){
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            Gson gson = new Gson();
+            String json = gson.toJson(user);
+            editor.putString(application.getString(R.string.key_logged_in_user), json);
+            editor.apply();
+        }
     }
 
     public User getUserDetails(){

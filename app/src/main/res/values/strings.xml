@@ -29,6 +29,7 @@
     <!-- Add task -->
     <string name="add_task_title">Add Task</string>
     <string name="create_new_task_text">Describe new task</string>
+    <string name="logout_all">Logout All</string>
     <!-- Add task -->
 
 </resources>

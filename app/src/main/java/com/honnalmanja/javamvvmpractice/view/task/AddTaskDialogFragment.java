@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -42,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AddTaskDialogFragment extends DialogFragment {
 
-    private AppCompatImageButton ibCancel, ibAccept;
+    private AppCompatImageView ibCancel, ibAccept;
     private AppCompatEditText etAddTask;
     private LinearLayoutCompat llcHolder;
 
