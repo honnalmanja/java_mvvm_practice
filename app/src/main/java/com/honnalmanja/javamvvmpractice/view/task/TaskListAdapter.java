@@ -28,6 +28,20 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListViewHolder> {
         notifyDataSetChanged();
     }
 
+    public List<Task> getTaskList() {
+        return taskList;
+    }
+
+    public void removeItem(int position){
+        this.taskList.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreItem(Task task, int position){
+        this.taskList.add(position, task);
+        notifyItemInserted(position);
+    }
+
     @NonNull
     @Override
     public TaskListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,12 +52,20 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull TaskListViewHolder holder, int position) {
         holder.setData(taskList.get(position));
-        holder.itemView.setOnClickListener(view ->
-                taskClickListener.onTaskClicked(taskList.get(position), position)
-        );
-        holder.getCbTask().setOnCheckedChangeListener((compoundButton, b) ->
-                taskClickListener.onTaskClicked(taskList.get(position), position)
-        );
+        holder.itemView.setOnClickListener(view -> {
+            int adapterPosition = holder.getAdapterPosition();
+            taskClickListener.onTaskClicked(taskList.get(adapterPosition), adapterPosition);
+        });
+        holder.itemView.setOnLongClickListener(view -> {
+            int adapterPosition = holder.getAdapterPosition();
+            taskClickListener.onLongTaskClicked(taskList.get(adapterPosition), adapterPosition);
+            return false;
+        });
+
+        holder.getCbTask().setOnCheckedChangeListener((compoundButton, b) -> {
+            int adapterPosition = holder.getAdapterPosition();
+            taskClickListener.onTaskClicked(taskList.get(adapterPosition), adapterPosition);
+        });
     }
 
     @Override

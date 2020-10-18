@@ -21,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @Module
 public class RetrofitModule {
 
-    private static String BASE_URL = "http://192.168.0.105:3000/";
+    private static String BASE_URL = "http://192.168.0.104:3000/";
 
     @Provides
     @Singleton

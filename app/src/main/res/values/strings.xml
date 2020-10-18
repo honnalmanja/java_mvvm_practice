@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Task Manager</string>
 
+    <!-- Errors Hint-->
+    <string name="server_not_reachable_text">Cannot reach server, Try again later</string>
+    <!-- Errors Hint-->
+
     <!-- preference key -->
     <string name="preference_file_key">AppPreference</string>
     <string name="key_user_token">key_user_token</string>
@@ -30,6 +34,7 @@
     <string name="add_task_title">Add Task</string>
     <string name="create_new_task_text">Describe new task</string>
     <string name="logout_all">Logout All</string>
+    <string name="refresh_task_text_btn">Refresh</string>
     <!-- Add task -->
 
 </resources>
