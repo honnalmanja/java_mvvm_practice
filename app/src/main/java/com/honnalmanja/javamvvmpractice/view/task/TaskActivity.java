@@ -14,6 +14,7 @@ import com.honnalmanja.javamvvmpractice.R;
 import com.honnalmanja.javamvvmpractice.model.app.TaskLiveData;
 import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
+import com.honnalmanja.javamvvmpractice.model.remote.users.User;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
 import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
@@ -35,8 +36,11 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.observers.DisposableSingleObserver;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 
 public class TaskActivity extends AppCompatActivity implements TaskClickListener {
@@ -97,7 +101,22 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                         })
         );
 
-        attachProfilePhoto();
+        compositeDisposable.add(
+                viewModel.getSavedUser()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableSingleObserver<User>() {
+                            @Override
+                            public void onSuccess(@NonNull User user) {
+                                attachProfilePhoto(user.getUserName());
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+
+                            }
+                        })
+        );
 
         taskSwipe.setOnRefreshListener(this::searchForTasks);
 
@@ -336,7 +355,7 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
 
     }
 
-    private void attachProfilePhoto() {
+    private void attachProfilePhoto(String userName) {
 
         TextDrawable drawable = TextDrawable.builder()
                 .beginConfig()
@@ -346,7 +365,7 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                 .bold()// height in px
                 .withBorder(4)
                 .endConfig()
-                .buildRoundRect("A",
+                .buildRoundRect((userName == null || userName.isEmpty())?"U":String.valueOf(userName.charAt(0)),
                         getResources().getColor(R.color.colorAccent),
                         100
                 );

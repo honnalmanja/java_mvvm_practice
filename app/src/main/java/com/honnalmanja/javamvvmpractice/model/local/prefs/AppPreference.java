@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 import com.honnalmanja.javamvvmpractice.R;
 import com.honnalmanja.javamvvmpractice.model.remote.users.User;
 
+import io.reactivex.rxjava3.core.Single;
+
 public class AppPreference {
 
     private static final String TAG = AppPreference.class.getSimpleName();
@@ -28,10 +30,16 @@ public class AppPreference {
                 application.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
     }
 
-    public void saveUserToken(String userToken){
+    public Single<Boolean> saveUserAndToken(User user, String userToken){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(application.getString(R.string.key_user_token), userToken);
+        if(user != null) {
+            Gson gson = new Gson();
+            String json = gson.toJson(user);
+            editor.putString(application.getString(R.string.key_logged_in_user), json);
+        }
         editor.apply();
+        return Single.just(true);
     }
 
     public String gerUserToken(){
@@ -39,20 +47,10 @@ public class AppPreference {
                 application.getString(R.string.key_user_token), "");
     }
 
-    public void saveUserDetails(User user){
-        if(user != null){
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            Gson gson = new Gson();
-            String json = gson.toJson(user);
-            editor.putString(application.getString(R.string.key_logged_in_user), json);
-            editor.apply();
-        }
-    }
-
-    public User getUserDetails(){
+    public Single<User> getUserDetails(){
         Gson gson = new Gson();
-        return gson.fromJson(sharedPreferences.getString(
-                application.getString(R.string.key_logged_in_user), null), User.class);
+        return Single.just(gson.fromJson(sharedPreferences.getString(
+                application.getString(R.string.key_logged_in_user), null), User.class));
     }
 
 }

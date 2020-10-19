@@ -5,11 +5,13 @@ import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.AddTaskRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.UpdateTaskRequest;
+import com.honnalmanja.javamvvmpractice.model.remote.users.User;
 import com.honnalmanja.javamvvmpractice.model.repository.TaskRepository;
 import com.honnalmanja.javamvvmpractice.model.repository.UserRepository;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import io.reactivex.rxjava3.core.Single;
 
 public class TaskViewModel extends ViewModel {
 
@@ -79,6 +81,10 @@ public class TaskViewModel extends ViewModel {
 
     public void postLogout(){
         userRepository.postLogoutRequest();
+    }
+
+    public Single<User> getSavedUser(){
+        return userRepository.getSavedUser();
     }
 
     public void clear(){

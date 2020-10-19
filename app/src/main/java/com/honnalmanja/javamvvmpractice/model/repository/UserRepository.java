@@ -7,7 +7,9 @@ import com.honnalmanja.javamvvmpractice.model.local.prefs.AppPreference;
 import com.honnalmanja.javamvvmpractice.model.remote.TaskManagerService;
 import com.honnalmanja.javamvvmpractice.model.remote.users.CreateUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.LoginUserRequest;
+import com.honnalmanja.javamvvmpractice.model.remote.users.User;
 import com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse;
+import com.honnalmanja.javamvvmpractice.utils.CommonUtils;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 
 import javax.inject.Inject;
@@ -15,6 +17,7 @@ import javax.inject.Inject;
 import androidx.lifecycle.MutableLiveData;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.observers.DisposableObserver;
 import io.reactivex.rxjava3.observers.DisposableSingleObserver;
@@ -74,8 +77,7 @@ public class UserRepository {
                                         userResponse.getUser(),
                                         null
                                 );
-                                appPreference.saveUserToken(userResponse.getToken());
-                                appPreference.saveUserDetails(userResponse.getUser());
+                                loginResponse.setToken(userResponse.getToken());
                             } else {
                                 loginResponse = new UserLiveData(
                                         response.code(),
@@ -109,7 +111,38 @@ public class UserRepository {
 
                     @Override
                     public void onComplete() {
-                        loginResponseLiveData.postValue(loginResponse);
+                        if(loginResponse.getStatusCode() == 202){
+                            saveUserToPreference(CommonUtils.LOGIN_API, loginResponse);
+                        } else {
+                            loginResponseLiveData.postValue(loginResponse);
+                        }
+
+                    }
+                })
+        );
+    }
+
+    private void saveUserToPreference(String api, UserLiveData userLiveData) {
+        compositeDisposable.add(
+                appPreference.saveUserAndToken(userLiveData.getUser(),
+                        userLiveData.getToken()
+                ).subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableSingleObserver<Boolean>() {
+                    @Override
+                    public void onSuccess(@NonNull Boolean aBoolean) {
+                        if(api.equalsIgnoreCase(CommonUtils.LOGIN_API)){
+                            loginResponseLiveData.postValue(userLiveData);
+                        } else if(api.equalsIgnoreCase(CommonUtils.SIGN_UP_API)){
+                            signUpResponseLiveData.postValue(userLiveData);
+                        } else {
+                            logoutResponseLiveData.postValue(userLiveData);
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+
                     }
                 })
         );
@@ -133,8 +166,6 @@ public class UserRepository {
                                         userResponse.getUser(),
                                         null
                                 );
-                                appPreference.saveUserToken(userResponse.getToken());
-                                appPreference.saveUserDetails(userResponse.getUser());
                             } else {
                                 signUpResponse = new UserLiveData(
                                         response.code(),
@@ -167,7 +198,11 @@ public class UserRepository {
 
                     @Override
                     public void onComplete() {
-                        signUpResponseLiveData.postValue(signUpResponse);
+                        if(signUpResponse.getStatusCode() == 200){
+                            saveUserToPreference(CommonUtils.SIGN_UP_API, signUpResponse);
+                        } else {
+                            signUpResponseLiveData.postValue(signUpResponse);
+                        }
                     }
                 })
         );
@@ -178,31 +213,21 @@ public class UserRepository {
                 taskManagerService.logoutUser("Bearer " + appPreference.gerUserToken())
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse>>() {
+                        .subscribeWith(new DisposableSingleObserver<Response<UserResponse>>() {
                             @Override
-                            public void onSuccess(Response<com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse> response) {
+                            public void onSuccess(Response<UserResponse> response) {
                                 LogUtil.d(TAG,"ServerResponse: " + response);
                                 UserLiveData userLiveData;
                                 if(response.code() == 202){
                                     UserResponse userResponse = response.body();
-                                    if(userResponse != null){
-                                        userLiveData = new UserLiveData(
-                                                response.code(),
-                                                response.message(),
-                                                null,
-                                                null
-                                        );
-                                        appPreference.saveUserToken("");
-                                        appPreference.saveUserDetails(null);
-                                    } else {
-                                        userLiveData = new UserLiveData(
-                                                response.code(),
-                                                response.message(),
-                                                null,
-                                                null
-                                        );
-                                    }
-                                    logoutResponseLiveData.postValue(userLiveData);
+                                    userLiveData = new UserLiveData(
+                                            response.code(),
+                                            response.message(),
+                                            null,
+                                            null
+                                    );
+                                    saveUserToPreference(CommonUtils.LOGOUT_API, userLiveData);
+
                                 } else {
                                     userLiveData = new UserLiveData(
                                             response.code(),
@@ -210,8 +235,8 @@ public class UserRepository {
                                             null,
                                             null
                                     );
+                                    logoutResponseLiveData.postValue(userLiveData);
                                 }
-                                logoutResponseLiveData.postValue(userLiveData);
                             }
 
                             @Override
@@ -227,6 +252,10 @@ public class UserRepository {
                             }
                         })
         );
+    }
+
+    public Single<User> getSavedUser(){
+        return appPreference.getUserDetails();
     }
 
     public void clear(){

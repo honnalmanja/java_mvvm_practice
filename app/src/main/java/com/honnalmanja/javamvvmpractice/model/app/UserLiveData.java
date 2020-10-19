@@ -10,6 +10,7 @@ public class UserLiveData {
     private String message;
     private User user;
     private List<User> userList;
+    private String token;
 
     public UserLiveData(int statusCode, String message, User user, List<User> userList) {
         this.statusCode = statusCode;
@@ -32,6 +33,14 @@ public class UserLiveData {
 
     public List<User> getUserList() {
         return userList;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     @Override
