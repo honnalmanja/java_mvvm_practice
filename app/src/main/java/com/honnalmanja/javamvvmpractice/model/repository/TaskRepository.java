@@ -5,8 +5,10 @@ import com.honnalmanja.javamvvmpractice.model.local.db.AppDatabase;
 import com.honnalmanja.javamvvmpractice.model.local.prefs.AppPreference;
 import com.honnalmanja.javamvvmpractice.model.remote.TaskManagerService;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.AddTaskRequest;
-import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.model.app.TaskLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
+import com.honnalmanja.javamvvmpractice.model.remote.tasks.UpdateTaskRequest;
+import com.honnalmanja.javamvvmpractice.utils.CommonUtils;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 
 import java.util.List;
@@ -35,29 +37,34 @@ public class TaskRepository {
     @Inject
     AppPreference appPreference;
 
-    private MutableLiveData<TasksResponse> allTaskLiveData = new MutableLiveData<>();
-    private MutableLiveData<TasksResponse> addTaskLiveData = new MutableLiveData<>();
-    private MutableLiveData<TasksResponse> updateTaskLiveData = new MutableLiveData<>();
-    private MutableLiveData<TasksResponse> deleteTaskLiveData = new MutableLiveData<>();
+    private MutableLiveData<TaskLiveData> allTaskLiveData = new MutableLiveData<>();
+    private MutableLiveData<TaskLiveData> singleTaskLiveData = new MutableLiveData<>();
+    private MutableLiveData<TaskLiveData> addTaskLiveData = new MutableLiveData<>();
+    private MutableLiveData<TaskLiveData> updateTaskLiveData = new MutableLiveData<>();
+    private MutableLiveData<TaskLiveData> deleteTaskLiveData = new MutableLiveData<>();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public TaskRepository() {
         TaskManager.getApp().getAppComponent().inject(this);
     }
 
-    public MutableLiveData<TasksResponse> getAllTaskLiveData() {
+    public MutableLiveData<TaskLiveData> getAllTaskLiveData() {
         return allTaskLiveData;
     }
 
-    public MutableLiveData<TasksResponse> getAddTaskLiveData() {
+    public MutableLiveData<TaskLiveData> getSingleTaskLiveData() {
+        return singleTaskLiveData;
+    }
+
+    public MutableLiveData<TaskLiveData> getAddTaskLiveData() {
         return addTaskLiveData;
     }
 
-    public MutableLiveData<TasksResponse> getUpdateTaskLiveData() {
+    public MutableLiveData<TaskLiveData> getUpdateTaskLiveData() {
         return updateTaskLiveData;
     }
 
-    public MutableLiveData<TasksResponse> getDeleteTaskLiveData() {
+    public MutableLiveData<TaskLiveData> getDeleteTaskLiveData() {
         return deleteTaskLiveData;
     }
 
@@ -70,7 +77,7 @@ public class TaskRepository {
                     @Override
                     public void onNext(@NonNull Response<List<Task>> response) {
                         LogUtil.d(TAG, "AllTaskResponse: " + response);
-                        allTaskLiveData.postValue(new TasksResponse(
+                        allTaskLiveData.postValue(new TaskLiveData(
                                 response.code(),
                                 response.message(),
                                 null,
@@ -82,7 +89,7 @@ public class TaskRepository {
                     public void onError(@NonNull Throwable e) {
                         LogUtil.e(TAG, "Throwable: "+e);
                         LogUtil.e(TAG, "Message: "+e.getMessage());
-                        allTaskLiveData.postValue(new TasksResponse(
+                        allTaskLiveData.postValue(new TaskLiveData(
                                 500,
                                 e.getMessage(),
                                 null,
@@ -98,6 +105,41 @@ public class TaskRepository {
         );
     }
 
+    public void getSingleTask(String taskID){
+        compositeDisposable.add(
+                taskManagerService.getATask(
+                        CommonUtils.composeToken(appPreference.gerUserToken()),taskID
+                ).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Response<Task>>() {
+                    @Override
+                    public void onSuccess(@NonNull Response<Task> response) {
+                        LogUtil.i(TAG, "Single task Response: " + response);
+
+                        singleTaskLiveData.postValue(new TaskLiveData(
+                                response.code(),
+                                response.message(),
+                                response.body(),
+                                null
+                        ));
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtil.e(TAG, "Single Task Error");
+                        LogUtil.e(TAG, "Throwable: "+e);
+                        LogUtil.e(TAG, "Message: "+e.getMessage());
+                        singleTaskLiveData.postValue(new TaskLiveData(
+                                500,
+                                e.getMessage(),
+                                null,
+                                null
+                        ));
+                    }
+                })
+        );
+    }
+
     public void postTask(AddTaskRequest addTaskRequest){
         compositeDisposable.add(
             taskManagerService.addTask(appPreference.gerUserToken(),addTaskRequest)
@@ -108,7 +150,7 @@ public class TaskRepository {
                 public void onSuccess(@NonNull Response<Task> response) {
                     LogUtil.i(TAG, "Response: " + response);
 
-                    addTaskLiveData.postValue(new TasksResponse(
+                    addTaskLiveData.postValue(new TaskLiveData(
                             response.code(),
                             response.message(),
                             response.body(),
@@ -120,7 +162,7 @@ public class TaskRepository {
                 public void onError(@NonNull Throwable e) {
                     LogUtil.e(TAG, "Throwable: "+e);
                     LogUtil.e(TAG, "Message: "+e.getMessage());
-                    addTaskLiveData.postValue(new TasksResponse(
+                    addTaskLiveData.postValue(new TaskLiveData(
                             500,
                             e.getMessage(),
                             null,
@@ -131,16 +173,74 @@ public class TaskRepository {
         );
     }
 
-    public void getAllTask(){
+    public void updateTask(UpdateTaskRequest updateTaskRequest, String taskID){
+        compositeDisposable.add(
+                taskManagerService.updateTask(
+                        CommonUtils.composeToken(appPreference.gerUserToken()),
+                        taskID, updateTaskRequest
+                ).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Response<Task>>() {
+                    @Override
+                    public void onSuccess(@NonNull Response<Task> response) {
+                        LogUtil.i(TAG, "Update Task Response: " + response);
 
+                        updateTaskLiveData.postValue(new TaskLiveData(
+                                response.code(),
+                                response.message(),
+                                response.body(),
+                                null
+                        ));
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtil.e(TAG, "UpdateTaskResponse");
+                        LogUtil.e(TAG, "Throwable: "+e);
+                        LogUtil.e(TAG, "Message: "+e.getMessage());
+                        updateTaskLiveData.postValue(new TaskLiveData(
+                                500,
+                                e.getMessage(),
+                                null,
+                                null
+                        ));
+                    }
+                })
+        );
     }
 
-    public void updateTask(AddTaskRequest addTaskRequest){
+    public void deleteTask(String taskID){
+        compositeDisposable.add(
+                taskManagerService.deleteTask(
+                        CommonUtils.composeToken(appPreference.gerUserToken()), taskID
+                ).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Response<Task>>() {
+                    @Override
+                    public void onSuccess(@NonNull Response<Task> response) {
+                        LogUtil.i(TAG, "Delete Task Response: " + response);
+                        deleteTaskLiveData.postValue(new TaskLiveData(
+                                response.code(),
+                                response.message(),
+                                response.body(),
+                                null
+                        ));
+                    }
 
-    }
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtil.e(TAG, "Throwable: "+e);
+                        LogUtil.e(TAG, "Message: "+e.getMessage());
+                        deleteTaskLiveData.postValue(new TaskLiveData(
+                                500,
+                                e.getMessage(),
+                                null,
+                                null
+                        ));
+                    }
+                })
 
-    public void deleteTask(){
-
+        );
     }
 
     public void clear(){

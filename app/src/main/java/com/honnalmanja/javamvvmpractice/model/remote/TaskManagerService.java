@@ -1,8 +1,9 @@
 package com.honnalmanja.javamvvmpractice.model.remote;
 
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.AddTaskRequest;
-import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.model.app.TaskLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
+import com.honnalmanja.javamvvmpractice.model.remote.tasks.UpdateTaskRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.CreateUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.LoginUserRequest;
 import com.honnalmanja.javamvvmpractice.model.remote.users.UserResponse;
@@ -18,6 +19,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface TaskManagerService {
 
@@ -42,11 +44,14 @@ public interface TaskManagerService {
     @POST("tasks/add")
     Single<Response<Task>> addTask(@Header("Authorization") String token, @Body AddTaskRequest addTaskRequest);
 
-    @PATCH("tasks/taskID")
-    Single<Response<Task>> updateTask(@Header("Authorization") String token, @Body AddTaskRequest addTaskRequest);
+    @PATCH("tasks/{id}")
+    Single<Response<Task>> updateTask(@Header("Authorization") String token, @Path("id") String id, @Body UpdateTaskRequest updateTaskRequest);
 
-    @DELETE("tasks/taskID")
-    Single<Response<Task>> deleteTask(@Header("Authorization") String token);
+    @DELETE("tasks/{id}")
+    Single<Response<Task>> deleteTask(@Header("Authorization") String token, @Path("id") String id);
+
+    @GET("tasks/{id}")
+    Single<Response<Task>> getATask(@Header("Authorization") String token, @Path("id") String id);
 
     //-------------------------- Task Services ------------------------------//
 

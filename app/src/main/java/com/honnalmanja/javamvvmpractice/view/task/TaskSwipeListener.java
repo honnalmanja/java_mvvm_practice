@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.honnalmanja.javamvvmpractice.R;
+import com.honnalmanja.javamvvmpractice.utils.LogUtil;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -19,11 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
 
+    private static final String TAG = TaskSwipeListener.class.getSimpleName();
+
     Context mContext;
     private Paint mClearPaint;
     private ColorDrawable mBackground;
-    private int backgroundColor;
-    private Drawable deleteDrawable;
+    private int backgroundRedColor = Color.parseColor("#b80f0a");
+    private int backgroundGreenColor = Color.parseColor("#229954");
+    private Drawable deleteDrawable, editDrawable;
     private int intrinsicWidth;
     private int intrinsicHeight;
 
@@ -31,20 +35,17 @@ abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
     public TaskSwipeListener(Context context) {
         mContext = context;
         mBackground = new ColorDrawable();
-        backgroundColor = Color.parseColor("#b80f0a");
         mClearPaint = new Paint();
         mClearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         deleteDrawable = ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_close_24);
-        intrinsicWidth = deleteDrawable.getIntrinsicWidth();
-        intrinsicHeight = deleteDrawable.getIntrinsicHeight();
-
+        editDrawable = ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_edit_24);
 
     }
 
     @Override
     // ItemTouchHelper.LEFT = left swipe, ItemTouchHelper.RIGHT = right swipe
     public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-        return makeMovementFlags(0, ItemTouchHelper.LEFT);
+        return makeMovementFlags(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
     }
 
     @Override
@@ -68,20 +69,62 @@ abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
             return;
         }
 
-        mBackground.setColor(backgroundColor);
-        mBackground.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
-        mBackground.draw(c);
+        if(dX > 0){ // swiping right
+            intrinsicWidth = editDrawable.getIntrinsicWidth();
+            intrinsicHeight = editDrawable.getIntrinsicHeight();
+            mBackground.setColor(backgroundGreenColor);
+            mBackground.setBounds(
+                    itemView.getLeft(),
+                    itemView.getTop(),
+                    itemView.getLeft() + ((int) dX),
+                    itemView.getBottom()
+            );
+            mBackground.draw(c);
 
-        int deleteIconTop = itemView.getTop() + (itemHeight - intrinsicHeight) / 2;
-        int deleteIconMargin = (itemHeight - intrinsicHeight) / 2;
-        int deleteIconLeft = itemView.getRight() - deleteIconMargin - intrinsicWidth;
-        int deleteIconRight = itemView.getRight() - deleteIconMargin;
-        int deleteIconBottom = deleteIconTop + intrinsicHeight;
+            // get bounds where i need to place the icon
+            // values the get the location of icon on screen based on itemView dimension
+            int editIconTop = itemView.getTop() + (itemHeight - intrinsicHeight) / 2;
+            int editIconMargin = (itemHeight - intrinsicHeight) / 2;
+            int editIconLeft = itemView.getLeft() + editIconMargin;
+            int editIconRight = itemView.getLeft() + editIconMargin + intrinsicWidth;
+            int editIconBottom = editIconTop + intrinsicHeight;
 
+            editDrawable.setBounds(editIconLeft, editIconTop, editIconRight, editIconBottom);
+            editDrawable.draw(c);
+        } else if (dX < 0){ // swiping left
+            intrinsicWidth = deleteDrawable.getIntrinsicWidth();
+            intrinsicHeight = deleteDrawable.getIntrinsicHeight();
+            mBackground.setColor(backgroundRedColor);
+            mBackground.setBounds(
+                    itemView.getRight() + ((int) dX),
+                    itemView.getTop(),
+                    itemView.getRight(),
+                    itemView.getBottom()
+            );
+            mBackground.draw(c);
 
-        deleteDrawable.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
-        deleteDrawable.draw(c);
+            // get bounds where i need to place the icon
+            // values the get the location of icon on screen based on itemView dimension
+            int deleteIconTop = itemView.getTop() + (itemHeight - intrinsicHeight) / 2;
+            int deleteIconMargin = (itemHeight - intrinsicHeight) / 2;
+            int deleteIconLeft = itemView.getRight() - deleteIconMargin - intrinsicWidth;
+            int deleteIconRight = itemView.getRight() - deleteIconMargin;
+            int deleteIconBottom = deleteIconTop + intrinsicHeight;
+            LogUtil.i(TAG, "---------------------------------------------------");
+            LogUtil.d(TAG, "deleteIconTop: "+deleteIconTop);
+            LogUtil.d(TAG, "deleteIconMargin: "+deleteIconMargin);
+            LogUtil.d(TAG, "deleteIconLeft: "+deleteIconLeft);
+            LogUtil.d(TAG, "deleteIconRight: "+deleteIconRight);
+            LogUtil.d(TAG, "deleteIconBottom: "+deleteIconBottom);
+            LogUtil.i(TAG, "---------------------------------------------------");
+            deleteDrawable.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
+            deleteDrawable.draw(c);
+        } else { // view is unSwiped
+            mBackground.setBounds(0, 0, 0, 0);
+            deleteDrawable.draw(c);
+        }
 
+        //mBackground.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
 
 
@@ -94,7 +137,7 @@ abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
 
     @Override
     public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
-        return 0.7f;
+        return 0.5f;
     }
 
 }

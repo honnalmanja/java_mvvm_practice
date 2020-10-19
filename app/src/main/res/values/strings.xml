@@ -32,9 +32,14 @@
 
     <!-- Add task -->
     <string name="add_task_title">Add Task</string>
+    <string name="update_task_title">Update Task</string>
     <string name="create_new_task_text">Describe new task</string>
     <string name="logout_all">Logout All</string>
     <string name="refresh_task_text_btn">Refresh</string>
     <!-- Add task -->
+
+    <!-- Task List -->
+    <string name="task_cannot_deleted">Task cannot delete, try again later</string>
+    <!-- Task List -->
 
 </resources>

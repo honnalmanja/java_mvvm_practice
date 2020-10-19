@@ -1,19 +1,16 @@
 package com.honnalmanja.javamvvmpractice.view.task;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -29,9 +26,10 @@ import android.widget.Toast;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
-import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
-import com.honnalmanja.javamvvmpractice.view.user.LoginActivity;
-import com.honnalmanja.javamvvmpractice.viewmodel.AddTaskViewModel;
+import com.honnalmanja.javamvvmpractice.model.app.TaskLiveData;
+import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
+import com.honnalmanja.javamvvmpractice.utils.CommonUtils;
+import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
 
 import java.util.concurrent.TimeUnit;
@@ -49,7 +47,7 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    private AddTaskViewModel viewModel;
+    private TaskViewModel viewModel;
 
     public AddTaskDialogFragment() {
         // Required empty public constructor
@@ -62,9 +60,11 @@ public class AddTaskDialogFragment extends DialogFragment {
      * @return A new instance of fragment AddTaskDialogFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AddTaskDialogFragment newInstance() {
+    public static AddTaskDialogFragment newInstance(boolean newTask, String taskID) {
         AddTaskDialogFragment fragment = new AddTaskDialogFragment();
         Bundle args = new Bundle();
+        args.putBoolean(CommonUtils.IS_NEW_TASK_KEY, newTask);
+        args.putString(CommonUtils.TASK_ID_KEY, taskID);
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,7 +72,7 @@ public class AddTaskDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(AddTaskViewModel.class);
+        viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
     }
 
@@ -132,9 +132,9 @@ public class AddTaskDialogFragment extends DialogFragment {
         );
 
 
-        viewModel.watchAddTaskLiveData().observe(this, new Observer<TasksResponse>() {
+        viewModel.subscribeAddTaskLiveData().observe(this, new Observer<TaskLiveData>() {
             @Override
-            public void onChanged(TasksResponse response) {
+            public void onChanged(TaskLiveData response) {
 
                 if(response.getStatusCode() == 201){
                     Toast.makeText(getActivity(), response.getMessage(), Toast.LENGTH_LONG).show();
@@ -160,7 +160,7 @@ public class AddTaskDialogFragment extends DialogFragment {
             return;
         }
 
-        viewModel.postTaskDescription(taskDescription);
+        viewModel.postTaskDescription(taskDescription, false);
 
     }
 
@@ -180,10 +180,34 @@ public class AddTaskDialogFragment extends DialogFragment {
         );
         ibAccept.setVisibility(View.VISIBLE);
 
+        etAddTask = view.findViewById(R.id.add_task_et);
+
         AppCompatTextView tvTitle = view.findViewById(R.id.tool_bar_title_tv);
+        if(getArguments() != null){
+            if(!getArguments().getBoolean(CommonUtils.IS_NEW_TASK_KEY, true)){
+                tvTitle.setText(getResources().getString(R.string.update_task_title));
+                getTaskDescription(etAddTask, getArguments().getString(CommonUtils.TASK_ID_KEY, ""));
+            }
+        }
         tvTitle.setText(getResources().getString(R.string.add_task_title));
 
-        etAddTask = view.findViewById(R.id.add_task_et);
+    }
+
+    private void getTaskDescription(AppCompatEditText etAddTask, String taskID) {
+
+        viewModel.getSingleTask(taskID);
+        viewModel.subscribeSingleTaskLiveData().observe(this, new Observer<TaskLiveData>() {
+            @Override
+            public void onChanged(TaskLiveData taskLiveData) {
+                if(taskLiveData.getStatusCode() == 202){
+                    viewModel.setTask(taskLiveData.getTask());
+                    etAddTask.setText(taskLiveData.getTask().getTaskDescription());
+                } else {
+                    Toast.makeText(getActivity(), taskLiveData.getMessage(), Toast.LENGTH_LONG).show();
+                    dismiss();
+                }
+            }
+        });
 
     }
 

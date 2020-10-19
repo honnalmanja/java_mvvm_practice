@@ -11,7 +11,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.honnalmanja.javamvvmpractice.R;
-import com.honnalmanja.javamvvmpractice.model.app.TasksResponse;
+import com.honnalmanja.javamvvmpractice.model.app.TaskLiveData;
 import com.honnalmanja.javamvvmpractice.model.app.UserLiveData;
 import com.honnalmanja.javamvvmpractice.model.remote.tasks.Task;
 import com.honnalmanja.javamvvmpractice.utils.LogUtil;
@@ -71,11 +71,7 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                         .subscribe(new Consumer<Unit>() {
                             @Override
                             public void accept(Unit unit) throws Throwable {
-                                FragmentManager fragmentManager
-                                        = getSupportFragmentManager();
-                                AddTaskDialogFragment addTaskDialogFragment
-                                        = AddTaskDialogFragment.newInstance();
-                                addTaskDialogFragment.show(fragmentManager, TAG);
+                                showTaskDialog(true, null);
                             }
                         }, new Consumer<Throwable>() {
                             @Override
@@ -122,6 +118,16 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
 
     }
 
+    private void showTaskDialog(boolean isNewTask,  String taskID) {
+
+        FragmentManager fragmentManager
+                = getSupportFragmentManager();
+        AddTaskDialogFragment addTaskDialogFragment
+                = AddTaskDialogFragment.newInstance(isNewTask, taskID);
+        addTaskDialogFragment.show(fragmentManager, TAG);
+
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -162,35 +168,95 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                 final int position = viewHolder.getAdapterPosition();
                 final Task item = taskListAdapter.getTaskList().get(position);
 
-                taskListAdapter.removeItem(position);
-
-                Snackbar snackbar = Snackbar
-                        .make(constraintLayout, "Item was removed from the list.", Snackbar.LENGTH_LONG);
-                snackbar.setAction("UNDO", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        taskListAdapter.restoreItem(item, position);
-                        rvTasks.scrollToPosition(position);
-                    }
-                });
-
-                snackbar.setActionTextColor(Color.YELLOW);
-                snackbar.show();
+                if(direction == ItemTouchHelper.LEFT){
+                    viewModel.deleteTask(item.getTaskID());
+                    viewModel.subscribeDeleteTaskLiveData()
+                            .observe(activity, new Observer<TaskLiveData>() {
+                                @Override
+                                public void onChanged(TaskLiveData taskLiveData) {
+                                    switch (taskLiveData.getStatusCode()){
+                                        case 202:
+                                            taskListAdapter.removeItem(position);
+                                            recreateTask(item,position);
+                                            break;
+                                        case 404:
+                                            taskDeleteFailed(item, position, taskLiveData.getMessage());
+                                            break;
+                                        case 400:
+                                            taskDeleteFailed(item, position,
+                                                    getResources().getString(R.string.task_cannot_deleted));
+                                            break;
+                                        default:
+                                            taskDeleteFailed(item, position,
+                                                    getResources().getString(R.string.server_not_reachable_text));
+                                            break;
+                                    }
+                                }
+                            });
+                } else {
+                    showTaskDialog(false, item.getTaskID());
+                }
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(taskSwipeListener);
         itemTouchHelper.attachToRecyclerView(rvTasks);
     }
 
-    @Override
-    public void onTaskClicked(Task task, int position) {
-        Snackbar.make(constraintLayout, "Single click: "+task.getTaskID(), BaseTransientBottomBar.LENGTH_LONG).show();
+    public void taskDeleteFailed(Task item, int position, String errorMessage){
+        taskListAdapter.restoreItem(item, position);
+        rvTasks.scrollToPosition(position);
+        Snackbar.make(constraintLayout, errorMessage, BaseTransientBottomBar.LENGTH_LONG).show();
+    }
+
+    public void recreateTask(Task task, int position){
+
+        Snackbar snackbar = Snackbar
+                .make(constraintLayout, "Task Removed", Snackbar.LENGTH_LONG);
+        snackbar.setAction("UNDO", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                viewModel.postTaskDescription(task.getTaskDescription(), task.isTaskCompleted());
+                viewModel.subscribeAddTaskLiveData().observe(activity, new Observer<TaskLiveData>() {
+                    @Override
+                    public void onChanged(TaskLiveData response) {
+                        if(response.getStatusCode() == 201){
+                            taskListAdapter.restoreItem(response.getTask(), position);
+                            rvTasks.scrollToPosition(position);
+                        } else if(response.getStatusCode() == 401) {
+                            goToLoginPage();
+                            Toast.makeText(activity, response.getMessage(), Toast.LENGTH_LONG).show();
+                        } else {
+                            Snackbar.make(constraintLayout, response.getMessage(), BaseTransientBottomBar.LENGTH_LONG).show();
+                        }
+                    }
+                });
+
+
+            }
+        });
+
+        snackbar.setActionTextColor(Color.YELLOW);
+        snackbar.show();
     }
 
     @Override
-    public void onLongTaskClicked(Task task, int position) {
-        Snackbar.make(constraintLayout, "Long Click: "+task.getTaskID(), BaseTransientBottomBar.LENGTH_LONG).show();
+    public void onTaskClicked(Task task, int position) {
+        viewModel.updateTask(task);
+        viewModel.subscribeUpdateTaskLiveData().observe(activity, new Observer<TaskLiveData>() {
+            @Override
+            public void onChanged(TaskLiveData response) {
+                if(response.getStatusCode() == 202){
+                    taskListAdapter.updateItem(response.getTask(), position);
+                    rvTasks.scrollToPosition(position);
+                } else if(response.getStatusCode() == 401) {
+                    goToLoginPage();
+                    Toast.makeText(activity, response.getMessage(), Toast.LENGTH_LONG).show();
+                } else {
+                    Snackbar.make(constraintLayout, response.getMessage(), BaseTransientBottomBar.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
 
@@ -199,17 +265,19 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
         taskSwipe.setRefreshing(true);
         viewModel.askForAllTask();
         viewModel.getAllTaskLiveData()
-                .observe(this, new Observer<TasksResponse>() {
+                .observe(this, new Observer<TaskLiveData>() {
                     @Override
-                    public void onChanged(TasksResponse response) {
+                    public void onChanged(TaskLiveData response) {
                         LogUtil.d(TAG, "TasksResponse: "+response);
                         taskSwipe.setRefreshing(false);
                         switch (response.getStatusCode()){
                             case 200:
                                 if(response.getTaskList() == null || response.getTaskList().size() == 0){
                                     taskRefreshBtn.setVisibility(View.VISIBLE);
+                                    rvTasks.setVisibility(View.GONE);
                                     Snackbar.make(constraintLayout, "No Task Found", BaseTransientBottomBar.LENGTH_LONG).show();
                                 } else {
+                                    rvTasks.setVisibility(View.VISIBLE);
                                     taskListAdapter.setTaskList(response.getTaskList());
                                 }
                                 break;
@@ -232,6 +300,7 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
 
     private void taskErrorHandling(String message){
         taskRefreshBtn.setVisibility(View.VISIBLE);
+        rvTasks.setVisibility(View.GONE);
         Snackbar.make(constraintLayout, message, BaseTransientBottomBar.LENGTH_LONG).show();
 
     }

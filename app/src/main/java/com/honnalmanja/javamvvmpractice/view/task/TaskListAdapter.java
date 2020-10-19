@@ -37,9 +37,14 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListViewHolder> {
         notifyItemRemoved(position);
     }
 
-    public void restoreItem(Task task, int position){
+    public void restoreItem(Task task, int position) {
         this.taskList.add(position, task);
         notifyItemInserted(position);
+    }
+
+    public void updateItem(Task task, int position){
+        this.taskList.set(position, task);
+        notifyItemChanged(position, task);
     }
 
     @NonNull
@@ -54,16 +59,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListViewHolder> {
         holder.setData(taskList.get(position));
         holder.itemView.setOnClickListener(view -> {
             int adapterPosition = holder.getAdapterPosition();
+            taskList.get(adapterPosition).setTaskCompleted(
+                    !(taskList.get(adapterPosition).isTaskCompleted())
+            );
             taskClickListener.onTaskClicked(taskList.get(adapterPosition), adapterPosition);
-        });
-        holder.itemView.setOnLongClickListener(view -> {
-            int adapterPosition = holder.getAdapterPosition();
-            taskClickListener.onLongTaskClicked(taskList.get(adapterPosition), adapterPosition);
-            return false;
         });
 
         holder.getCbTask().setOnCheckedChangeListener((compoundButton, b) -> {
             int adapterPosition = holder.getAdapterPosition();
+            taskList.get(adapterPosition).setTaskCompleted(
+                    !(taskList.get(adapterPosition).isTaskCompleted())
+            );
             taskClickListener.onTaskClicked(taskList.get(adapterPosition), adapterPosition);
         });
     }

@@ -42,6 +42,10 @@ public class Task {
         return taskCompleted;
     }
 
+    public void setTaskCompleted(boolean taskCompleted) {
+        this.taskCompleted = taskCompleted;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
