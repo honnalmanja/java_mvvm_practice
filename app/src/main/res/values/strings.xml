@@ -1,3 +1,46 @@
 <resources>
-    <string name="app_name">JavaMVVMPractice</string>
+    <string name="app_name">Task Manager</string>
+
+    <!-- Errors Hint-->
+    <string name="server_not_reachable_text">Cannot reach server, Try again later</string>
+    <!-- Errors Hint-->
+
+    <!-- preference key -->
+    <string name="preference_file_key">AppPreference</string>
+    <string name="key_user_token">key_user_token</string>
+    <string name="key_logged_in_user">key_logged_in_user</string>
+    <!-- preference key -->
+
+    <!-- Login -->
+    <string name="forgot_password_text">Forgot Password ?</string>
+    <string name="login_text">Login</string>
+    <string name="sign_up_text">Create new account</string>
+    <string name="enter_email_hint">Enter Email</string>
+    <string name="enter_password_hint">Enter Password</string>
+    <string name="enter_email_error">Enter email address</string>
+    <string name="enter_password_error">Enter Password</string>
+    <string name="enter_valid_email_error">Enter valid Email</string>
+    <!-- Login -->
+
+    <!-- Sign up -->
+    <string name="sign_up_title">Sign Up</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="enter_age_hint">Enter Age</string>
+    <string name="enter_your_name_hint">Enter your name</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Sign up -->
+
+    <!-- Add task -->
+    <string name="add_task_title">Add Task</string>
+    <string name="update_task_title">Update Task</string>
+    <string name="create_new_task_text">Describe new task</string>
+    <string name="logout_all">Logout All</string>
+    <string name="refresh_task_text_btn">Refresh</string>
+    <string name="enter_task_description_error">Describe Task please</string>
+    <!-- Add task -->
+
+    <!-- Task List -->
+    <string name="task_cannot_deleted">Task cannot delete, try again later</string>
+    <!-- Task List -->
+
 </resources>
