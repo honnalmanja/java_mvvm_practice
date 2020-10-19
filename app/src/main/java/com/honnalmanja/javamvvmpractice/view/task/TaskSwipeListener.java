@@ -60,16 +60,17 @@ abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
 
         View itemView = viewHolder.itemView;
         int itemHeight = itemView.getHeight();
-
-        boolean isCancelled = dX == 0 && !isCurrentlyActive;
-
-        if (isCancelled) {
-            clearCanvas(c, itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            return;
-        }
+        int itemWidth = itemView.getWidth();
 
         if(dX > 0){ // swiping right
+            boolean isCancelled = dX == itemWidth && !isCurrentlyActive;
+
+            if (isCancelled) {
+                clearCanvas(c, itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                return;
+            }
+
             intrinsicWidth = editDrawable.getIntrinsicWidth();
             intrinsicHeight = editDrawable.getIntrinsicHeight();
             mBackground.setColor(backgroundGreenColor);
@@ -92,6 +93,14 @@ abstract public class TaskSwipeListener extends ItemTouchHelper.Callback {
             editDrawable.setBounds(editIconLeft, editIconTop, editIconRight, editIconBottom);
             editDrawable.draw(c);
         } else if (dX < 0){ // swiping left
+            boolean isCancelled = dX == 0 && !isCurrentlyActive;
+
+            if (isCancelled) {
+                clearCanvas(c, itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                return;
+            }
+
             intrinsicWidth = deleteDrawable.getIntrinsicWidth();
             intrinsicHeight = deleteDrawable.getIntrinsicHeight();
             mBackground.setColor(backgroundRedColor);

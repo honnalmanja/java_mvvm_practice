@@ -71,7 +71,7 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                         .subscribe(new Consumer<Unit>() {
                             @Override
                             public void accept(Unit unit) throws Throwable {
-                                showTaskDialog(true, null);
+                                showTaskDialog(true, null, -1);
                             }
                         }, new Consumer<Throwable>() {
                             @Override
@@ -118,12 +118,12 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
 
     }
 
-    private void showTaskDialog(boolean isNewTask,  String taskID) {
+    private void showTaskDialog(boolean isNewTask, String taskID, int position) {
 
         FragmentManager fragmentManager
                 = getSupportFragmentManager();
         AddTaskDialogFragment addTaskDialogFragment
-                = AddTaskDialogFragment.newInstance(isNewTask, taskID);
+                = AddTaskDialogFragment.newInstance(isNewTask, taskID, position);
         addTaskDialogFragment.show(fragmentManager, TAG);
 
     }
@@ -194,7 +194,8 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
                                 }
                             });
                 } else {
-                    showTaskDialog(false, item.getTaskID());
+                    taskListAdapter.removeItem(position);
+                    showTaskDialog(false, item.getTaskID(), position);
                 }
             }
         };
@@ -303,6 +304,11 @@ public class TaskActivity extends AppCompatActivity implements TaskClickListener
         rvTasks.setVisibility(View.GONE);
         Snackbar.make(constraintLayout, message, BaseTransientBottomBar.LENGTH_LONG).show();
 
+    }
+
+    public void updateEditedTask(Task task, int position){
+        taskListAdapter.restoreItem(task, position);
+        rvTasks.scrollToPosition(position);
     }
 
     private void goToLoginPage() {

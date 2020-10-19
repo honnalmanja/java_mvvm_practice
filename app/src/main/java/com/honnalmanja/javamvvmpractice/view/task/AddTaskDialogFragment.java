@@ -1,6 +1,7 @@
 package com.honnalmanja.javamvvmpractice.view.task;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,7 @@ import com.honnalmanja.javamvvmpractice.utils.CommonUtils;
 import com.honnalmanja.javamvvmpractice.viewmodel.TaskViewModel;
 import com.jakewharton.rxbinding4.view.RxView;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,15 +58,19 @@ public class AddTaskDialogFragment extends DialogFragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     * @param newTask send true if new task.
+     * @param position position of task present for edit send -1 for new task.
+     * @param taskID server ID of task that need to be updated
      *
      * @return A new instance of fragment AddTaskDialogFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AddTaskDialogFragment newInstance(boolean newTask, String taskID) {
+    public static AddTaskDialogFragment newInstance(boolean newTask, String taskID, int position) {
         AddTaskDialogFragment fragment = new AddTaskDialogFragment();
         Bundle args = new Bundle();
         args.putBoolean(CommonUtils.IS_NEW_TASK_KEY, newTask);
         args.putString(CommonUtils.TASK_ID_KEY, taskID);
+        args.putInt(CommonUtils.TASK_POSITION_KEY, position);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,6 +96,11 @@ public class AddTaskDialogFragment extends DialogFragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_add_task_dialog, container, false);
@@ -106,7 +117,17 @@ public class AddTaskDialogFragment extends DialogFragment {
                         .subscribe(new Consumer<Unit>() {
                             @Override
                             public void accept(Unit unit) throws Throwable {
-                                postTask();
+                                if(getArguments() != null){
+                                    if(getArguments().getBoolean(CommonUtils.IS_NEW_TASK_KEY)){
+                                        postTask();
+                                    } else {
+                                        int position = getArguments().getInt(CommonUtils.TASK_POSITION_KEY);
+                                        updateTheCurrentTask(position);
+                                    }
+                                } else {
+                                    postTask();
+                                }
+
                             }
                         }, new Consumer<Throwable>() {
                             @Override
@@ -121,7 +142,18 @@ public class AddTaskDialogFragment extends DialogFragment {
                         .subscribe(new Consumer<Unit>() {
                             @Override
                             public void accept(Unit unit) throws Throwable {
-                                dismiss();
+                                if(getArguments() != null) {
+                                    if (getArguments().getBoolean(CommonUtils.IS_NEW_TASK_KEY)) {
+                                        int position = getArguments().getInt(CommonUtils.TASK_POSITION_KEY);
+                                        updateTaskToList(viewModel.getTask(), position, "Update Canceled");
+                                    } else {
+                                        dismiss();
+                                    }
+                                } else {
+                                    dismiss();
+                                }
+
+
                             }
                         }, new Consumer<Throwable>() {
                             @Override
@@ -210,6 +242,42 @@ public class AddTaskDialogFragment extends DialogFragment {
         });
 
     }
+
+    private void updateTheCurrentTask(int position) {
+
+        Task task = viewModel.getTask();
+        String previousDescription = task.getTaskDescription();
+        String taskDescription = Objects.requireNonNull(etAddTask.getText()).toString();
+        if(taskDescription.trim().isEmpty()){
+            etAddTask.setError(
+                    Objects.requireNonNull(getActivity())
+                            .getResources().getString(R.string.enter_task_description_error)
+            );
+            return;
+        }
+        task.setTaskDescription(etAddTask.getText().toString());
+        viewModel.updateTask(task);
+        viewModel.subscribeUpdateTaskLiveData()
+                .observe(this, new Observer<TaskLiveData>() {
+                    @Override
+                    public void onChanged(TaskLiveData taskLiveData) {
+                        if(!(taskLiveData.getStatusCode() == (200|202|201))){
+                            task.setTaskDescription(previousDescription);
+                        }
+                        updateTaskToList(task, position,taskLiveData.getMessage());
+
+                    }
+                });
+
+    }
+
+    private void updateTaskToList(Task task, int position, String message){
+        ((TaskActivity) Objects.requireNonNull(getActivity()))
+                .updateEditedTask(task, position);
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+        dismiss();
+    }
+
 
     @Override
     public void onDestroy() {

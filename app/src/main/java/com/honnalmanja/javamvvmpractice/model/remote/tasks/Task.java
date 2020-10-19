@@ -46,6 +46,10 @@ public class Task {
         this.taskCompleted = taskCompleted;
     }
 
+    public void setTaskDescription(String taskDescription) {
+        this.taskDescription = taskDescription;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }

@@ -36,6 +36,7 @@
     <string name="create_new_task_text">Describe new task</string>
     <string name="logout_all">Logout All</string>
     <string name="refresh_task_text_btn">Refresh</string>
+    <string name="enter_task_description_error">Describe Task please</string>
     <!-- Add task -->
 
     <!-- Task List -->
